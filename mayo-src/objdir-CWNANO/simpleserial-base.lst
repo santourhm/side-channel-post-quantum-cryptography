@@ -1,0 +1,451 @@
+   1              		.cpu cortex-m0
+   2              		.arch armv6s-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 0
+  12              		.eabi_attribute 18, 4
+  13              		.file	"simpleserial-base.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "simpleserial-base.c"
+  18              		.section	.text.cmd_load_key,"ax",%progbits
+  19              		.align	1
+  20              		.global	cmd_load_key
+  21              		.syntax unified
+  22              		.code	16
+  23              		.thumb_func
+  25              	cmd_load_key:
+  26              	.LVL0:
+  27              	.LFB0:
+   1:simpleserial-base.c **** #include "hal.h"
+   2:simpleserial-base.c **** #include <stdint.h>
+   3:simpleserial-base.c **** #include <string.h>
+   4:simpleserial-base.c **** #include "simpleserial.h"
+   5:simpleserial-base.c **** #include "mayo_params.h"
+   6:simpleserial-base.c **** #include "mayo_core.h"
+   7:simpleserial-base.c **** 
+   8:simpleserial-base.c **** /*
+   9:simpleserial-base.c ****  * SimpleSerial command map:
+  10:simpleserial-base.c ****  *
+  11:simpleserial-base.c ****  *   'k'  16 bytes  seedsk  → expand secret key into g_mayo_esk (no trigger)
+  12:simpleserial-base.c ****  *   'p'  16 bytes  message → trigger_high, mayo_sign(), trigger_low, send sig
+  13:simpleserial-base.c ****  *   'x'   0 bytes          → soft reset (zero ESK)
+  14:simpleserial-base.c ****  *
+  15:simpleserial-base.c ****  * Signature response ('r'): MAYO_SIG_B = 66 bytes.
+  16:simpleserial-base.c ****  *
+  17:simpleserial-base.c ****  * For power / EM capture in ChipWhisperer:
+  18:simpleserial-base.c ****  *   - trigger rises at the start of mayo_sign() (after hashing the message)
+  19:simpleserial-base.c ****  *   - trigger falls when the signing loop exits
+  20:simpleserial-base.c ****  *   The entire quadratic-form + linear-solve core is inside the trigger window.
+  21:simpleserial-base.c ****  */
+  22:simpleserial-base.c **** 
+  23:simpleserial-base.c **** static uint8_t sig_buf[MAYO_SIG_B];
+  24:simpleserial-base.c **** static uint8_t esk_loaded = 0;
+  25:simpleserial-base.c **** 
+  26:simpleserial-base.c **** /* ------------------------------------------------------------------ */
+  27:simpleserial-base.c **** 
+  28:simpleserial-base.c **** uint8_t cmd_load_key(uint8_t *k, uint8_t len)
+  29:simpleserial-base.c **** {
+  28              		.loc 1 29 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  30:simpleserial-base.c ****     (void)len;
+  32              		.loc 1 30 5 view .LVU1
+  31:simpleserial-base.c ****     mayo_expand_sk(k);    /* derive O, L and store in g_mayo_esk */
+  33              		.loc 1 31 5 view .LVU2
+  29:simpleserial-base.c ****     (void)len;
+  34              		.loc 1 29 1 is_stmt 0 view .LVU3
+  35 0000 10B5     		push	{r4, lr}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 8
+  38              		.cfi_offset 4, -8
+  39              		.cfi_offset 14, -4
+  40              		.loc 1 31 5 view .LVU4
+  41 0002 FFF7FEFF 		bl	mayo_expand_sk
+  42              	.LVL1:
+  32:simpleserial-base.c ****     esk_loaded = 1;
+  43              		.loc 1 32 5 is_stmt 1 view .LVU5
+  33:simpleserial-base.c ****     return 0x01;
+  34:simpleserial-base.c **** }
+  44              		.loc 1 34 1 is_stmt 0 view .LVU6
+  45              		@ sp needed
+  32:simpleserial-base.c ****     esk_loaded = 1;
+  46              		.loc 1 32 16 view .LVU7
+  47 0006 0120     		movs	r0, #1
+  48 0008 014B     		ldr	r3, .L2
+  49 000a 1870     		strb	r0, [r3]
+  33:simpleserial-base.c ****     return 0x01;
+  50              		.loc 1 33 5 is_stmt 1 view .LVU8
+  51              		.loc 1 34 1 is_stmt 0 view .LVU9
+  52 000c 10BD     		pop	{r4, pc}
+  53              	.L3:
+  54 000e C046     		.align	2
+  55              	.L2:
+  56 0010 00000000 		.word	.LANCHOR0
+  57              		.cfi_endproc
+  58              	.LFE0:
+  60              		.section	.text.cmd_reset,"ax",%progbits
+  61              		.align	1
+  62              		.global	cmd_reset
+  63              		.syntax unified
+  64              		.code	16
+  65              		.thumb_func
+  67              	cmd_reset:
+  68              	.LVL2:
+  69              	.LFB2:
+  35:simpleserial-base.c **** 
+  36:simpleserial-base.c **** uint8_t cmd_sign(uint8_t *msg, uint8_t len)
+  37:simpleserial-base.c **** {
+  38:simpleserial-base.c ****     if (!esk_loaded) {
+  39:simpleserial-base.c ****         /* No key yet — echo the message back as a no-op */
+  40:simpleserial-base.c ****         simpleserial_put('r', len, msg);
+  41:simpleserial-base.c ****         return 0x01;
+  42:simpleserial-base.c ****     }
+  43:simpleserial-base.c **** 
+  44:simpleserial-base.c ****     trigger_high();
+  45:simpleserial-base.c ****     int ret = mayo_sign(msg, len, sig_buf);
+  46:simpleserial-base.c ****     trigger_low();
+  47:simpleserial-base.c **** 
+  48:simpleserial-base.c ****     if (ret == 0) {
+  49:simpleserial-base.c ****         simpleserial_put('r', MAYO_SIG_B, sig_buf);
+  50:simpleserial-base.c ****     } else {
+  51:simpleserial-base.c ****         /* Sign failed (extremely unlikely with these parameters) */
+  52:simpleserial-base.c ****         simpleserial_put('e', 1, (uint8_t *)"\xFF");
+  53:simpleserial-base.c ****     }
+  54:simpleserial-base.c ****     return 0x00;
+  55:simpleserial-base.c **** }
+  56:simpleserial-base.c **** 
+  57:simpleserial-base.c **** uint8_t cmd_reset(uint8_t *x, uint8_t len)
+  58:simpleserial-base.c **** {
+  70              		.loc 1 58 1 is_stmt 1 view -0
+  71              		.cfi_startproc
+  72              		@ args = 0, pretend = 0, frame = 0
+  73              		@ frame_needed = 0, uses_anonymous_args = 0
+  59:simpleserial-base.c ****     (void)x; (void)len;
+  74              		.loc 1 59 5 view .LVU11
+  75              		.loc 1 59 14 view .LVU12
+  60:simpleserial-base.c ****     memset(g_mayo_esk, 0, sizeof(g_mayo_esk));
+  76              		.loc 1 60 5 view .LVU13
+  77 0000 9022     		movs	r2, #144
+  58:simpleserial-base.c ****     (void)x; (void)len;
+  78              		.loc 1 58 1 is_stmt 0 view .LVU14
+  79 0002 10B5     		push	{r4, lr}
+  80              	.LCFI1:
+  81              		.cfi_def_cfa_offset 8
+  82              		.cfi_offset 4, -8
+  83              		.cfi_offset 14, -4
+  84              		.loc 1 60 5 view .LVU15
+  85 0004 0021     		movs	r1, #0
+  86              	.LVL3:
+  61:simpleserial-base.c ****     esk_loaded = 0;
+  62:simpleserial-base.c ****     return 0x00;
+  63:simpleserial-base.c **** }
+  87              		.loc 1 63 1 view .LVU16
+  88              		@ sp needed
+  60:simpleserial-base.c ****     esk_loaded = 0;
+  89              		.loc 1 60 5 view .LVU17
+  90 0006 0448     		ldr	r0, .L5
+  91              	.LVL4:
+  60:simpleserial-base.c ****     esk_loaded = 0;
+  92              		.loc 1 60 5 view .LVU18
+  93 0008 9200     		lsls	r2, r2, #2
+  94 000a FFF7FEFF 		bl	memset
+  95              	.LVL5:
+  61:simpleserial-base.c ****     esk_loaded = 0;
+  96              		.loc 1 61 5 is_stmt 1 view .LVU19
+  61:simpleserial-base.c ****     esk_loaded = 0;
+  97              		.loc 1 61 16 is_stmt 0 view .LVU20
+  98 000e 0020     		movs	r0, #0
+  99 0010 024B     		ldr	r3, .L5+4
+ 100 0012 1870     		strb	r0, [r3]
+  62:simpleserial-base.c **** }
+ 101              		.loc 1 62 5 is_stmt 1 view .LVU21
+ 102              		.loc 1 63 1 is_stmt 0 view .LVU22
+ 103 0014 10BD     		pop	{r4, pc}
+ 104              	.L6:
+ 105 0016 C046     		.align	2
+ 106              	.L5:
+ 107 0018 00000000 		.word	g_mayo_esk
+ 108 001c 00000000 		.word	.LANCHOR0
+ 109              		.cfi_endproc
+ 110              	.LFE2:
+ 112              		.section	.rodata.str1.1,"aMS",%progbits,1
+ 113              	.LC4:
+ 114 0000 FF00     		.ascii	"\377\000"
+ 115              		.section	.text.cmd_sign,"ax",%progbits
+ 116              		.align	1
+ 117              		.global	cmd_sign
+ 118              		.syntax unified
+ 119              		.code	16
+ 120              		.thumb_func
+ 122              	cmd_sign:
+ 123              	.LVL6:
+ 124              	.LFB1:
+  37:simpleserial-base.c ****     if (!esk_loaded) {
+ 125              		.loc 1 37 1 is_stmt 1 view -0
+ 126              		.cfi_startproc
+ 127              		@ args = 0, pretend = 0, frame = 0
+ 128              		@ frame_needed = 0, uses_anonymous_args = 0
+  38:simpleserial-base.c ****         /* No key yet — echo the message back as a no-op */
+ 129              		.loc 1 38 5 view .LVU24
+  37:simpleserial-base.c ****     if (!esk_loaded) {
+ 130              		.loc 1 37 1 is_stmt 0 view .LVU25
+ 131 0000 70B5     		push	{r4, r5, r6, lr}
+ 132              	.LCFI2:
+ 133              		.cfi_def_cfa_offset 16
+ 134              		.cfi_offset 4, -16
+ 135              		.cfi_offset 5, -12
+ 136              		.cfi_offset 6, -8
+ 137              		.cfi_offset 14, -4
+  38:simpleserial-base.c ****         /* No key yet — echo the message back as a no-op */
+ 138              		.loc 1 38 9 view .LVU26
+ 139 0002 124C     		ldr	r4, .L13
+  37:simpleserial-base.c ****     if (!esk_loaded) {
+ 140              		.loc 1 37 1 view .LVU27
+ 141 0004 0500     		movs	r5, r0
+  38:simpleserial-base.c ****         /* No key yet — echo the message back as a no-op */
+ 142              		.loc 1 38 8 view .LVU28
+ 143 0006 2378     		ldrb	r3, [r4]
+  37:simpleserial-base.c ****     if (!esk_loaded) {
+ 144              		.loc 1 37 1 view .LVU29
+ 145 0008 0E00     		movs	r6, r1
+  38:simpleserial-base.c ****         /* No key yet — echo the message back as a no-op */
+ 146              		.loc 1 38 8 view .LVU30
+ 147 000a 002B     		cmp	r3, #0
+ 148 000c 05D1     		bne	.L8
+  40:simpleserial-base.c ****         return 0x01;
+ 149              		.loc 1 40 9 is_stmt 1 view .LVU31
+ 150 000e 0200     		movs	r2, r0
+ 151 0010 7220     		movs	r0, #114
+ 152              	.LVL7:
+  40:simpleserial-base.c ****         return 0x01;
+ 153              		.loc 1 40 9 is_stmt 0 view .LVU32
+ 154 0012 FFF7FEFF 		bl	simpleserial_put
+ 155              	.LVL8:
+  41:simpleserial-base.c ****     }
+ 156              		.loc 1 41 9 is_stmt 1 view .LVU33
+  41:simpleserial-base.c ****     }
+ 157              		.loc 1 41 16 is_stmt 0 view .LVU34
+ 158 0016 0120     		movs	r0, #1
+ 159              	.LVL9:
+ 160              	.L9:
+  55:simpleserial-base.c **** 
+ 161              		.loc 1 55 1 view .LVU35
+ 162              		@ sp needed
+ 163              	.LVL10:
+  55:simpleserial-base.c **** 
+ 164              		.loc 1 55 1 view .LVU36
+ 165 0018 70BD     		pop	{r4, r5, r6, pc}
+ 166              	.LVL11:
+ 167              	.L8:
+ 168              	.LBB4:
+ 169              	.LBI4:
+  36:simpleserial-base.c **** {
+ 170              		.loc 1 36 9 is_stmt 1 view .LVU37
+ 171              	.LBB5:
+  44:simpleserial-base.c ****     int ret = mayo_sign(msg, len, sig_buf);
+ 172              		.loc 1 44 5 view .LVU38
+  45:simpleserial-base.c ****     trigger_low();
+ 173              		.loc 1 45 15 is_stmt 0 view .LVU39
+ 174 001a 0134     		adds	r4, r4, #1
+  44:simpleserial-base.c ****     int ret = mayo_sign(msg, len, sig_buf);
+ 175              		.loc 1 44 5 view .LVU40
+ 176 001c FFF7FEFF 		bl	trigger_high
+ 177              	.LVL12:
+  45:simpleserial-base.c ****     trigger_low();
+ 178              		.loc 1 45 5 is_stmt 1 view .LVU41
+  45:simpleserial-base.c ****     trigger_low();
+ 179              		.loc 1 45 15 is_stmt 0 view .LVU42
+ 180 0020 2800     		movs	r0, r5
+ 181 0022 2200     		movs	r2, r4
+ 182 0024 3100     		movs	r1, r6
+ 183 0026 FFF7FEFF 		bl	mayo_sign
+ 184              	.LVL13:
+ 185 002a 0500     		movs	r5, r0
+ 186              	.LVL14:
+  46:simpleserial-base.c **** 
+ 187              		.loc 1 46 5 is_stmt 1 view .LVU43
+ 188 002c FFF7FEFF 		bl	trigger_low
+ 189              	.LVL15:
+  48:simpleserial-base.c ****         simpleserial_put('r', MAYO_SIG_B, sig_buf);
+ 190              		.loc 1 48 5 view .LVU44
+  48:simpleserial-base.c ****         simpleserial_put('r', MAYO_SIG_B, sig_buf);
+ 191              		.loc 1 48 8 is_stmt 0 view .LVU45
+ 192 0030 002D     		cmp	r5, #0
+ 193 0032 06D1     		bne	.L10
+  49:simpleserial-base.c ****     } else {
+ 194              		.loc 1 49 9 is_stmt 1 view .LVU46
+ 195 0034 2200     		movs	r2, r4
+ 196 0036 4221     		movs	r1, #66
+ 197 0038 7220     		movs	r0, #114
+ 198              	.L12:
+  52:simpleserial-base.c ****     }
+ 199              		.loc 1 52 9 is_stmt 0 view .LVU47
+ 200 003a FFF7FEFF 		bl	simpleserial_put
+ 201              	.LVL16:
+ 202              	.LBE5:
+ 203              	.LBE4:
+  41:simpleserial-base.c ****     }
+ 204              		.loc 1 41 16 view .LVU48
+ 205 003e 0020     		movs	r0, #0
+ 206 0040 EAE7     		b	.L9
+ 207              	.L10:
+ 208              	.LBB7:
+ 209              	.LBB6:
+  52:simpleserial-base.c ****     }
+ 210              		.loc 1 52 9 is_stmt 1 view .LVU49
+ 211 0042 0121     		movs	r1, #1
+ 212 0044 6520     		movs	r0, #101
+ 213 0046 024A     		ldr	r2, .L13+4
+ 214 0048 F7E7     		b	.L12
+ 215              	.L14:
+ 216 004a C046     		.align	2
+ 217              	.L13:
+ 218 004c 00000000 		.word	.LANCHOR0
+ 219 0050 00000000 		.word	.LC4
+ 220              	.LBE6:
+ 221              	.LBE7:
+ 222              		.cfi_endproc
+ 223              	.LFE1:
+ 225              		.section	.text.startup.main,"ax",%progbits
+ 226              		.align	1
+ 227              		.global	main
+ 228              		.syntax unified
+ 229              		.code	16
+ 230              		.thumb_func
+ 232              	main:
+ 233              	.LFB3:
+  64:simpleserial-base.c **** 
+  65:simpleserial-base.c **** /* ------------------------------------------------------------------ */
+  66:simpleserial-base.c **** 
+  67:simpleserial-base.c **** int main(void)
+  68:simpleserial-base.c **** {
+ 234              		.loc 1 68 1 view -0
+ 235              		.cfi_startproc
+ 236              		@ Volatile: function does not return.
+ 237              		@ args = 0, pretend = 0, frame = 0
+ 238              		@ frame_needed = 0, uses_anonymous_args = 0
+  69:simpleserial-base.c ****     platform_init();
+ 239              		.loc 1 69 5 view .LVU51
+  68:simpleserial-base.c ****     platform_init();
+ 240              		.loc 1 68 1 is_stmt 0 view .LVU52
+ 241 0000 10B5     		push	{r4, lr}
+ 242              	.LCFI3:
+ 243              		.cfi_def_cfa_offset 8
+ 244              		.cfi_offset 4, -8
+ 245              		.cfi_offset 14, -4
+ 246              		.loc 1 69 5 view .LVU53
+ 247 0002 FFF7FEFF 		bl	platform_init
+ 248              	.LVL17:
+  70:simpleserial-base.c ****     init_uart();
+ 249              		.loc 1 70 5 is_stmt 1 view .LVU54
+ 250 0006 FFF7FEFF 		bl	init_uart
+ 251              	.LVL18:
+  71:simpleserial-base.c ****     trigger_setup();
+ 252              		.loc 1 71 5 view .LVU55
+ 253 000a FFF7FEFF 		bl	trigger_setup
+ 254              	.LVL19:
+  72:simpleserial-base.c **** 
+  73:simpleserial-base.c ****     simpleserial_init();
+ 255              		.loc 1 73 5 view .LVU56
+ 256 000e FFF7FEFF 		bl	simpleserial_init
+ 257              	.LVL20:
+  74:simpleserial-base.c ****     simpleserial_addcmd('k', MAYO_CSK_B,  cmd_load_key);
+ 258              		.loc 1 74 5 view .LVU57
+ 259 0012 1021     		movs	r1, #16
+ 260 0014 084A     		ldr	r2, .L17
+ 261 0016 6B20     		movs	r0, #107
+ 262 0018 FFF7FEFF 		bl	simpleserial_addcmd
+ 263              	.LVL21:
+  75:simpleserial-base.c ****     simpleserial_addcmd('p', MAYO_DIGEST_B, cmd_sign);
+ 264              		.loc 1 75 5 view .LVU58
+ 265 001c 1021     		movs	r1, #16
+ 266 001e 074A     		ldr	r2, .L17+4
+ 267 0020 7020     		movs	r0, #112
+ 268 0022 FFF7FEFF 		bl	simpleserial_addcmd
+ 269              	.LVL22:
+  76:simpleserial-base.c ****     simpleserial_addcmd('x', 0,           cmd_reset);
+ 270              		.loc 1 76 5 view .LVU59
+ 271 0026 0021     		movs	r1, #0
+ 272 0028 7820     		movs	r0, #120
+ 273 002a 054A     		ldr	r2, .L17+8
+ 274 002c FFF7FEFF 		bl	simpleserial_addcmd
+ 275              	.LVL23:
+ 276              	.L16:
+  77:simpleserial-base.c **** 
+  78:simpleserial-base.c ****     while (1)
+ 277              		.loc 1 78 5 view .LVU60
+  79:simpleserial-base.c ****         simpleserial_get();
+ 278              		.loc 1 79 9 discriminator 1 view .LVU61
+ 279 0030 FFF7FEFF 		bl	simpleserial_get
+ 280              	.LVL24:
+  78:simpleserial-base.c ****         simpleserial_get();
+ 281              		.loc 1 78 11 view .LVU62
+ 282 0034 FCE7     		b	.L16
+ 283              	.L18:
+ 284 0036 C046     		.align	2
+ 285              	.L17:
+ 286 0038 00000000 		.word	cmd_load_key
+ 287 003c 00000000 		.word	cmd_sign
+ 288 0040 00000000 		.word	cmd_reset
+ 289              		.cfi_endproc
+ 290              	.LFE3:
+ 292              		.bss
+ 293              		.set	.LANCHOR0,. + 0
+ 296              	esk_loaded:
+ 297 0000 00       		.space	1
+ 300              	sig_buf:
+ 301 0001 00000000 		.space	66
+ 301      00000000 
+ 301      00000000 
+ 301      00000000 
+ 301      00000000 
+ 302              		.text
+ 303              	.Letext0:
+ 304              		.file 2 ".././simpleserial/simpleserial.h"
+ 305              		.file 3 ".././hal/stm32f0/stm32f0_hal.h"
+ 306              		.file 4 ".././hal/hal.h"
+ 307              		.file 5 "/usr/include/newlib/string.h"
+ 308              		.file 6 "mayo_core.h"
+ 309              		.file 7 "/usr/lib/gcc/arm-none-eabi/14.2.1/include/stdint.h"
+ 310              		.file 8 "<built-in>"
+DEFINED SYMBOLS
+                            *ABS*:00000000 simpleserial-base.c
+     /tmp/ccBq4KID.s:19     .text.cmd_load_key:00000000 $t
+     /tmp/ccBq4KID.s:25     .text.cmd_load_key:00000000 cmd_load_key
+     /tmp/ccBq4KID.s:56     .text.cmd_load_key:00000010 $d
+     /tmp/ccBq4KID.s:61     .text.cmd_reset:00000000 $t
+     /tmp/ccBq4KID.s:67     .text.cmd_reset:00000000 cmd_reset
+     /tmp/ccBq4KID.s:107    .text.cmd_reset:00000018 $d
+     /tmp/ccBq4KID.s:116    .text.cmd_sign:00000000 $t
+     /tmp/ccBq4KID.s:122    .text.cmd_sign:00000000 cmd_sign
+     /tmp/ccBq4KID.s:218    .text.cmd_sign:0000004c $d
+     /tmp/ccBq4KID.s:226    .text.startup.main:00000000 $t
+     /tmp/ccBq4KID.s:232    .text.startup.main:00000000 main
+     /tmp/ccBq4KID.s:286    .text.startup.main:00000038 $d
+     /tmp/ccBq4KID.s:296    .bss:00000000 esk_loaded
+     /tmp/ccBq4KID.s:297    .bss:00000000 $d
+     /tmp/ccBq4KID.s:300    .bss:00000001 sig_buf
+
+UNDEFINED SYMBOLS
+mayo_expand_sk
+memset
+g_mayo_esk
+simpleserial_put
+trigger_high
+mayo_sign
+trigger_low
+platform_init
+init_uart
+trigger_setup
+simpleserial_init
+simpleserial_addcmd
+simpleserial_get

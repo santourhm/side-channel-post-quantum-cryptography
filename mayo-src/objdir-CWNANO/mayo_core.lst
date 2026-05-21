@@ -1,0 +1,3468 @@
+   1              		.cpu cortex-m0
+   2              		.arch armv6s-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 4
+  11              		.eabi_attribute 34, 0
+  12              		.eabi_attribute 18, 4
+  13              		.file	"mayo_core.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "mayo_core.c"
+  18              		.section	.text.gf16_mul,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.code	16
+  22              		.thumb_func
+  24              	gf16_mul:
+  25              	.LVL0:
+  26              	.LFB0:
+  27              		.file 2 "mayo_gf16.h"
+   1:mayo_gf16.h   **** #ifndef MAYO_GF16_H
+   2:mayo_gf16.h   **** #define MAYO_GF16_H
+   3:mayo_gf16.h   **** 
+   4:mayo_gf16.h   **** #include <stdint.h>
+   5:mayo_gf16.h   **** #include "mayo_params.h"
+   6:mayo_gf16.h   **** 
+   7:mayo_gf16.h   **** /*
+   8:mayo_gf16.h   ****  * GF(16) = GF(2^4)  with irreducible polynomial  x^4 + x + 1.
+   9:mayo_gf16.h   ****  * Elements: 4-bit nibbles 0x0 .. 0xF.
+  10:mayo_gf16.h   ****  * Addition: bitwise XOR (characteristic 2).
+  11:mayo_gf16.h   ****  * Multiplication: lookup table (256 bytes in flash).
+  12:mayo_gf16.h   ****  */
+  13:mayo_gf16.h   **** 
+  14:mayo_gf16.h   **** /* 16x16 multiplication table: GF16_MUL[a*16 + b] = a*b */
+  15:mayo_gf16.h   **** extern const uint8_t GF16_MUL[256];
+  16:mayo_gf16.h   **** 
+  17:mayo_gf16.h   **** static inline uint8_t gf16_mul(uint8_t a, uint8_t b)
+  18:mayo_gf16.h   **** {
+  28              		.loc 2 18 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  19:mayo_gf16.h   ****     return GF16_MUL[((a & 0xF) << 4) | (b & 0xF)];
+  33              		.loc 2 19 5 view .LVU1
+  34              		.loc 2 19 32 is_stmt 0 view .LVU2
+  35 0000 FF22     		movs	r2, #255
+  20:mayo_gf16.h   **** }
+  36              		.loc 2 20 1 view .LVU3
+  37              		@ sp needed
+  19:mayo_gf16.h   ****     return GF16_MUL[((a & 0xF) << 4) | (b & 0xF)];
+  38              		.loc 2 19 32 view .LVU4
+  39 0002 0001     		lsls	r0, r0, #4
+  40              	.LVL1:
+  19:mayo_gf16.h   ****     return GF16_MUL[((a & 0xF) << 4) | (b & 0xF)];
+  41              		.loc 2 19 32 view .LVU5
+  42 0004 1040     		ands	r0, r2
+  19:mayo_gf16.h   ****     return GF16_MUL[((a & 0xF) << 4) | (b & 0xF)];
+  43              		.loc 2 19 43 view .LVU6
+  44 0006 F03A     		subs	r2, r2, #240
+  19:mayo_gf16.h   ****     return GF16_MUL[((a & 0xF) << 4) | (b & 0xF)];
+  45              		.loc 2 19 20 view .LVU7
+  46 0008 024B     		ldr	r3, .L2
+  19:mayo_gf16.h   ****     return GF16_MUL[((a & 0xF) << 4) | (b & 0xF)];
+  47              		.loc 2 19 43 view .LVU8
+  48 000a 1140     		ands	r1, r2
+  49              	.LVL2:
+  19:mayo_gf16.h   ****     return GF16_MUL[((a & 0xF) << 4) | (b & 0xF)];
+  50              		.loc 2 19 38 view .LVU9
+  51 000c 0843     		orrs	r0, r1
+  19:mayo_gf16.h   ****     return GF16_MUL[((a & 0xF) << 4) | (b & 0xF)];
+  52              		.loc 2 19 20 discriminator 1 view .LVU10
+  53 000e 185C     		ldrb	r0, [r3, r0]
+  54              		.loc 2 20 1 view .LVU11
+  55 0010 7047     		bx	lr
+  56              	.L3:
+  57 0012 C046     		.align	2
+  58              	.L2:
+  59 0014 00000000 		.word	GF16_MUL
+  60              		.cfi_endproc
+  61              	.LFE0:
+  63              		.section	.text.nibble_get,"ax",%progbits
+  64              		.align	1
+  65              		.syntax unified
+  66              		.code	16
+  67              		.thumb_func
+  69              	nibble_get:
+  70              	.LVL3:
+  71              	.LFB3:
+  21:mayo_gf16.h   **** 
+  22:mayo_gf16.h   **** static inline uint8_t gf16_add(uint8_t a, uint8_t b)
+  23:mayo_gf16.h   **** {
+  24:mayo_gf16.h   ****     return (a ^ b) & 0xF;
+  25:mayo_gf16.h   **** }
+  26:mayo_gf16.h   **** 
+  27:mayo_gf16.h   **** /* a^(q-2) = a^14 via repeated squaring  (q=16) */
+  28:mayo_gf16.h   **** static inline uint8_t gf16_inv(uint8_t a)
+  29:mayo_gf16.h   **** {
+  30:mayo_gf16.h   ****     if (a == 0) return 0;
+  31:mayo_gf16.h   ****     uint8_t a2  = gf16_mul(a,  a);
+  32:mayo_gf16.h   ****     uint8_t a4  = gf16_mul(a2, a2);
+  33:mayo_gf16.h   ****     uint8_t a8  = gf16_mul(a4, a4);
+  34:mayo_gf16.h   ****     uint8_t a12 = gf16_mul(a8, a4);
+  35:mayo_gf16.h   ****     return            gf16_mul(a12, a2);   /* a^14 */
+  36:mayo_gf16.h   **** }
+  37:mayo_gf16.h   **** 
+  38:mayo_gf16.h   **** /* ---------- nibble-packed array helpers ----------
+  39:mayo_gf16.h   ****  *
+  40:mayo_gf16.h   ****  * A nibble array of N elements occupies ceil(N/2) bytes.
+  41:mayo_gf16.h   ****  * Element at logical index idx:
+  42:mayo_gf16.h   ****  *   even idx -> low  nibble of byte idx/2
+  43:mayo_gf16.h   ****  *   odd  idx -> high nibble of byte idx/2
+  44:mayo_gf16.h   ****  */
+  45:mayo_gf16.h   **** 
+  46:mayo_gf16.h   **** static inline uint8_t nibble_get(const uint8_t *arr, int idx)
+  47:mayo_gf16.h   **** {
+  72              		.loc 2 47 1 is_stmt 1 view -0
+  73              		.cfi_startproc
+  74              		@ args = 0, pretend = 0, frame = 0
+  75              		@ frame_needed = 0, uses_anonymous_args = 0
+  76              		@ link register save eliminated.
+  48:mayo_gf16.h   ****     return (idx & 1) ? (arr[idx >> 1] >> 4) : (arr[idx >> 1] & 0xF);
+  77              		.loc 2 48 5 view .LVU13
+  78              		.loc 2 48 33 is_stmt 0 discriminator 1 view .LVU14
+  79 0000 4B10     		asrs	r3, r1, #1
+  80              		.loc 2 48 28 discriminator 1 view .LVU15
+  81 0002 C05C     		ldrb	r0, [r0, r3]
+  82              	.LVL4:
+  83              		.loc 2 48 45 view .LVU16
+  84 0004 C907     		lsls	r1, r1, #31
+  85 0006 01D5     		bpl	.L5
+  86              	.LVL5:
+  87              		.loc 2 48 45 discriminator 1 view .LVU17
+  88 0008 0009     		lsrs	r0, r0, #4
+  89              	.L6:
+  49:mayo_gf16.h   **** }
+  90              		.loc 2 49 1 view .LVU18
+  91              		@ sp needed
+  92 000a 7047     		bx	lr
+  93              	.L5:
+  48:mayo_gf16.h   ****     return (idx & 1) ? (arr[idx >> 1] >> 4) : (arr[idx >> 1] & 0xF);
+  94              		.loc 2 48 45 discriminator 2 view .LVU19
+  95 000c 0F23     		movs	r3, #15
+  96 000e 1840     		ands	r0, r3
+  97 0010 FBE7     		b	.L6
+  98              		.cfi_endproc
+  99              	.LFE3:
+ 101              		.section	.text.decode_bs8,"ax",%progbits
+ 102              		.align	1
+ 103              		.syntax unified
+ 104              		.code	16
+ 105              		.thumb_func
+ 107              	decode_bs8:
+ 108              	.LVL6:
+ 109              	.LFB6:
+  50:mayo_gf16.h   **** 
+  51:mayo_gf16.h   **** static inline void nibble_set(uint8_t *arr, int idx, uint8_t val)
+  52:mayo_gf16.h   **** {
+  53:mayo_gf16.h   ****     if (idx & 1)
+  54:mayo_gf16.h   ****         arr[idx >> 1] = (arr[idx >> 1] & 0x0F) | ((val & 0xF) << 4);
+  55:mayo_gf16.h   ****     else
+  56:mayo_gf16.h   ****         arr[idx >> 1] = (arr[idx >> 1] & 0xF0) | (val & 0xF);
+  57:mayo_gf16.h   **** }
+  58:mayo_gf16.h   **** 
+  59:mayo_gf16.h   **** /* arr[idx] ^= val  (GF16 in-place add) */
+  60:mayo_gf16.h   **** static inline void nibble_add(uint8_t *arr, int idx, uint8_t val)
+  61:mayo_gf16.h   **** {
+  62:mayo_gf16.h   ****     if (idx & 1)
+  63:mayo_gf16.h   ****         arr[idx >> 1] ^= (val & 0xF) << 4;
+  64:mayo_gf16.h   ****     else
+  65:mayo_gf16.h   ****         arr[idx >> 1] ^= (val & 0xF);
+  66:mayo_gf16.h   **** }
+  67:mayo_gf16.h   **** 
+  68:mayo_gf16.h   **** /*
+  69:mayo_gf16.h   ****  * Decode an 8-byte bitsliced vector (m=16 GF16 elements) to a plain
+  70:mayo_gf16.h   ****  * 16-nibble array. Layout per spec Algorithm 4:
+  71:mayo_gf16.h   ****  *   bytes [0..1]  = bit-plane 0  (element 15 at MSB of byte 0, element 0 at LSB of byte 1)
+  72:mayo_gf16.h   ****  *   bytes [2..3]  = bit-plane 1
+  73:mayo_gf16.h   ****  *   bytes [4..5]  = bit-plane 2
+  74:mayo_gf16.h   ****  *   bytes [6..7]  = bit-plane 3
+  75:mayo_gf16.h   ****  */
+  76:mayo_gf16.h   **** static inline void decode_bs8(const uint8_t *bs, uint8_t out[16])
+  77:mayo_gf16.h   **** {
+ 110              		.loc 2 77 1 is_stmt 1 view -0
+ 111              		.cfi_startproc
+ 112              		@ args = 0, pretend = 0, frame = 8
+ 113              		@ frame_needed = 0, uses_anonymous_args = 0
+  78:mayo_gf16.h   ****     for (int a = 0; a < 16; a++) {
+ 114              		.loc 2 78 5 view .LVU21
+ 115              	.LBB2:
+ 116              		.loc 2 78 10 view .LVU22
+ 117              		.loc 2 78 23 discriminator 1 view .LVU23
+ 118 0000 0723     		movs	r3, #7
+ 119              	.LBE2:
+  77:mayo_gf16.h   ****     for (int a = 0; a < 16; a++) {
+ 120              		.loc 2 77 1 is_stmt 0 view .LVU24
+ 121 0002 F7B5     		push	{r0, r1, r2, r4, r5, r6, r7, lr}
+ 122              	.LCFI0:
+ 123              		.cfi_def_cfa_offset 32
+ 124              		.cfi_offset 0, -32
+ 125              		.cfi_offset 1, -28
+ 126              		.cfi_offset 2, -24
+ 127              		.cfi_offset 4, -20
+ 128              		.cfi_offset 5, -16
+ 129              		.cfi_offset 6, -12
+ 130              		.cfi_offset 7, -8
+ 131              		.cfi_offset 14, -4
+ 132 0004 9C46     		mov	ip, r3
+  77:mayo_gf16.h   ****     for (int a = 0; a < 16; a++) {
+ 133              		.loc 2 77 1 view .LVU25
+ 134 0006 0191     		str	r1, [sp, #4]
+ 135              	.LBB4:
+ 136              		.loc 2 78 14 view .LVU26
+ 137 0008 0021     		movs	r1, #0
+ 138              	.LVL7:
+ 139              	.L8:
+ 140              	.LBB3:
+  79:mayo_gf16.h   ****         int bi = a / 8;           /* byte index within plane */
+ 141              		.loc 2 79 9 is_stmt 1 view .LVU27
+ 142 000a 6446     		mov	r4, ip
+ 143              		.loc 2 79 13 is_stmt 0 view .LVU28
+ 144 000c CE10     		asrs	r6, r1, #3
+ 145              	.LVL8:
+  80:mayo_gf16.h   ****         int bb = 7 - (a % 8);    /* bit position (MSB=element 0 within that byte) */
+ 146              		.loc 2 80 9 is_stmt 1 view .LVU29
+  81:mayo_gf16.h   ****         uint8_t b0 = (bs[0 * 2 + bi] >> bb) & 1;
+  82:mayo_gf16.h   ****         uint8_t b1 = (bs[1 * 2 + bi] >> bb) & 1;
+ 147              		.loc 2 82 25 is_stmt 0 view .LVU30
+ 148 000e 8519     		adds	r5, r0, r6
+ 149 0010 AA78     		ldrb	r2, [r5, #2]
+ 150 0012 8C43     		bics	r4, r1
+ 151              	.LVL9:
+  81:mayo_gf16.h   ****         uint8_t b0 = (bs[0 * 2 + bi] >> bb) & 1;
+ 152              		.loc 2 81 9 is_stmt 1 view .LVU31
+ 153              		.loc 2 82 9 view .LVU32
+  83:mayo_gf16.h   ****         uint8_t b2 = (bs[2 * 2 + bi] >> bb) & 1;
+ 154              		.loc 2 83 9 view .LVU33
+  84:mayo_gf16.h   ****         uint8_t b3 = (bs[3 * 2 + bi] >> bb) & 1;
+ 155              		.loc 2 84 9 view .LVU34
+  85:mayo_gf16.h   ****         out[a] = b0 | (b1 << 1) | (b2 << 2) | (b3 << 3);
+ 156              		.loc 2 85 9 view .LVU35
+  82:mayo_gf16.h   ****         uint8_t b2 = (bs[2 * 2 + bi] >> bb) & 1;
+ 157              		.loc 2 82 38 is_stmt 0 view .LVU36
+ 158 0014 2241     		asrs	r2, r2, r4
+ 159              		.loc 2 85 21 view .LVU37
+ 160 0016 0223     		movs	r3, #2
+ 161 0018 5200     		lsls	r2, r2, #1
+ 162 001a 1A40     		ands	r2, r3
+  83:mayo_gf16.h   ****         uint8_t b3 = (bs[3 * 2 + bi] >> bb) & 1;
+ 163              		.loc 2 83 25 view .LVU38
+ 164 001c 2B79     		ldrb	r3, [r5, #4]
+ 165              		.loc 2 85 33 view .LVU39
+ 166 001e 0427     		movs	r7, #4
+  83:mayo_gf16.h   ****         uint8_t b3 = (bs[3 * 2 + bi] >> bb) & 1;
+ 167              		.loc 2 83 38 view .LVU40
+ 168 0020 2341     		asrs	r3, r3, r4
+ 169              		.loc 2 85 33 view .LVU41
+ 170 0022 9B00     		lsls	r3, r3, #2
+ 171 0024 3B40     		ands	r3, r7
+ 172 0026 1343     		orrs	r3, r2
+  81:mayo_gf16.h   ****         uint8_t b1 = (bs[1 * 2 + bi] >> bb) & 1;
+ 173              		.loc 2 81 25 view .LVU42
+ 174 0028 825D     		ldrb	r2, [r0, r6]
+  81:mayo_gf16.h   ****         uint8_t b1 = (bs[1 * 2 + bi] >> bb) & 1;
+ 175              		.loc 2 81 17 view .LVU43
+ 176 002a 0126     		movs	r6, #1
+ 177              	.LVL10:
+  81:mayo_gf16.h   ****         uint8_t b1 = (bs[1 * 2 + bi] >> bb) & 1;
+ 178              		.loc 2 81 38 view .LVU44
+ 179 002c 2241     		asrs	r2, r2, r4
+  81:mayo_gf16.h   ****         uint8_t b1 = (bs[1 * 2 + bi] >> bb) & 1;
+ 180              		.loc 2 81 17 view .LVU45
+ 181 002e 3240     		ands	r2, r6
+ 182              		.loc 2 85 33 view .LVU46
+ 183 0030 1A43     		orrs	r2, r3
+  84:mayo_gf16.h   ****         out[a] = b0 | (b1 << 1) | (b2 << 2) | (b3 << 3);
+ 184              		.loc 2 84 25 view .LVU47
+ 185 0032 AB79     		ldrb	r3, [r5, #6]
+  84:mayo_gf16.h   ****         out[a] = b0 | (b1 << 1) | (b2 << 2) | (b3 << 3);
+ 186              		.loc 2 84 38 view .LVU48
+ 187 0034 2341     		asrs	r3, r3, r4
+ 188              		.loc 2 85 45 view .LVU49
+ 189 0036 0824     		movs	r4, #8
+ 190              	.LVL11:
+ 191              		.loc 2 85 45 view .LVU50
+ 192 0038 DB00     		lsls	r3, r3, #3
+ 193 003a 2340     		ands	r3, r4
+ 194 003c 1A43     		orrs	r2, r3
+ 195              		.loc 2 85 16 view .LVU51
+ 196 003e 019B     		ldr	r3, [sp, #4]
+ 197 0040 5A54     		strb	r2, [r3, r1]
+ 198              	.LVL12:
+ 199              		.loc 2 85 16 view .LVU52
+ 200              	.LBE3:
+  78:mayo_gf16.h   ****         int bi = a / 8;           /* byte index within plane */
+ 201              		.loc 2 78 30 is_stmt 1 discriminator 3 view .LVU53
+ 202 0042 8919     		adds	r1, r1, r6
+ 203              	.LVL13:
+  78:mayo_gf16.h   ****         int bi = a / 8;           /* byte index within plane */
+ 204              		.loc 2 78 23 discriminator 1 view .LVU54
+ 205 0044 1029     		cmp	r1, #16
+ 206 0046 E0D1     		bne	.L8
+ 207              	.LBE4:
+  86:mayo_gf16.h   ****     }
+  87:mayo_gf16.h   **** }
+ 208              		.loc 2 87 1 is_stmt 0 view .LVU55
+ 209              		@ sp needed
+ 210 0048 F7BD     		pop	{r0, r1, r2, r4, r5, r6, r7, pc}
+ 211              		.cfi_endproc
+ 212              	.LFE6:
+ 214              		.section	.text.nibble_set,"ax",%progbits
+ 215              		.align	1
+ 216              		.syntax unified
+ 217              		.code	16
+ 218              		.thumb_func
+ 220              	nibble_set:
+ 221              	.LVL14:
+ 222              	.LFB4:
+  52:mayo_gf16.h   ****     if (idx & 1)
+ 223              		.loc 2 52 1 is_stmt 1 view -0
+ 224              		.cfi_startproc
+ 225              		@ args = 0, pretend = 0, frame = 0
+ 226              		@ frame_needed = 0, uses_anonymous_args = 0
+  53:mayo_gf16.h   ****         arr[idx >> 1] = (arr[idx >> 1] & 0x0F) | ((val & 0xF) << 4);
+ 227              		.loc 2 53 5 view .LVU57
+  52:mayo_gf16.h   ****     if (idx & 1)
+ 228              		.loc 2 52 1 is_stmt 0 view .LVU58
+ 229 0000 10B5     		push	{r4, lr}
+ 230              	.LCFI1:
+ 231              		.cfi_def_cfa_offset 8
+ 232              		.cfi_offset 4, -8
+ 233              		.cfi_offset 14, -4
+  52:mayo_gf16.h   ****     if (idx & 1)
+ 234              		.loc 2 52 1 view .LVU59
+ 235 0002 1300     		movs	r3, r2
+ 236              	.LBB7:
+ 237              	.LBB8:
+  54:mayo_gf16.h   ****     else
+ 238              		.loc 2 54 34 view .LVU60
+ 239 0004 4A10     		asrs	r2, r1, #1
+ 240              	.LVL15:
+  54:mayo_gf16.h   ****     else
+ 241              		.loc 2 54 29 view .LVU61
+ 242 0006 8418     		adds	r4, r0, r2
+ 243 0008 825C     		ldrb	r2, [r0, r2]
+ 244 000a 0F20     		movs	r0, #15
+ 245              	.LVL16:
+  54:mayo_gf16.h   ****     else
+ 246              		.loc 2 54 29 view .LVU62
+ 247              	.LBE8:
+ 248              	.LBE7:
+  53:mayo_gf16.h   ****         arr[idx >> 1] = (arr[idx >> 1] & 0x0F) | ((val & 0xF) << 4);
+ 249              		.loc 2 53 8 view .LVU63
+ 250 000c C907     		lsls	r1, r1, #31
+ 251 000e 05D5     		bpl	.L11
+ 252              	.LVL17:
+ 253              	.LBB10:
+ 254              	.LBI7:
+  51:mayo_gf16.h   **** {
+ 255              		.loc 2 51 20 is_stmt 1 view .LVU64
+ 256              	.LBB9:
+  54:mayo_gf16.h   ****     else
+ 257              		.loc 2 54 9 view .LVU65
+  54:mayo_gf16.h   ****     else
+ 258              		.loc 2 54 48 is_stmt 0 view .LVU66
+ 259 0010 0240     		ands	r2, r0
+ 260 0012 1B01     		lsls	r3, r3, #4
+ 261              	.LVL18:
+  54:mayo_gf16.h   ****     else
+ 262              		.loc 2 54 48 view .LVU67
+ 263 0014 1A43     		orrs	r2, r3
+ 264 0016 D2B2     		uxtb	r2, r2
+ 265              	.LVL19:
+ 266              	.L12:
+  54:mayo_gf16.h   ****     else
+ 267              		.loc 2 54 23 view .LVU68
+ 268 0018 2270     		strb	r2, [r4]
+ 269              	.LBE9:
+ 270              	.LBE10:
+  57:mayo_gf16.h   **** 
+ 271              		.loc 2 57 1 view .LVU69
+ 272              		@ sp needed
+ 273 001a 10BD     		pop	{r4, pc}
+ 274              	.L11:
+  56:mayo_gf16.h   **** }
+ 275              		.loc 2 56 9 is_stmt 1 view .LVU70
+ 276 001c 8243     		bics	r2, r0
+ 277 001e 0340     		ands	r3, r0
+ 278 0020 1A43     		orrs	r2, r3
+ 279 0022 F9E7     		b	.L12
+ 280              		.cfi_endproc
+ 281              	.LFE4:
+ 283              		.section	.text.nibble_add,"ax",%progbits
+ 284              		.align	1
+ 285              		.syntax unified
+ 286              		.code	16
+ 287              		.thumb_func
+ 289              	nibble_add:
+ 290              	.LVL20:
+ 291              	.LFB5:
+  61:mayo_gf16.h   ****     if (idx & 1)
+ 292              		.loc 2 61 1 view -0
+ 293              		.cfi_startproc
+ 294              		@ args = 0, pretend = 0, frame = 0
+ 295              		@ frame_needed = 0, uses_anonymous_args = 0
+  62:mayo_gf16.h   ****         arr[idx >> 1] ^= (val & 0xF) << 4;
+ 296              		.loc 2 62 5 view .LVU72
+  61:mayo_gf16.h   ****     if (idx & 1)
+ 297              		.loc 2 61 1 is_stmt 0 view .LVU73
+ 298 0000 10B5     		push	{r4, lr}
+ 299              	.LCFI2:
+ 300              		.cfi_def_cfa_offset 8
+ 301              		.cfi_offset 4, -8
+ 302              		.cfi_offset 14, -4
+ 303              	.LBB13:
+ 304              	.LBB14:
+  63:mayo_gf16.h   ****     else
+ 305              		.loc 2 63 12 view .LVU74
+ 306 0002 4B10     		asrs	r3, r1, #1
+ 307 0004 C418     		adds	r4, r0, r3
+ 308 0006 C35C     		ldrb	r3, [r0, r3]
+ 309              	.LBE14:
+ 310              	.LBE13:
+  62:mayo_gf16.h   ****         arr[idx >> 1] ^= (val & 0xF) << 4;
+ 311              		.loc 2 62 8 view .LVU75
+ 312 0008 C907     		lsls	r1, r1, #31
+ 313 000a 04D5     		bpl	.L14
+ 314              	.LVL21:
+ 315              	.LBB16:
+ 316              	.LBI13:
+  60:mayo_gf16.h   **** {
+ 317              		.loc 2 60 20 is_stmt 1 view .LVU76
+ 318              	.LBB15:
+  63:mayo_gf16.h   ****     else
+ 319              		.loc 2 63 9 view .LVU77
+  63:mayo_gf16.h   ****     else
+ 320              		.loc 2 63 23 is_stmt 0 view .LVU78
+ 321 000c 1201     		lsls	r2, r2, #4
+ 322              	.LVL22:
+  63:mayo_gf16.h   ****     else
+ 323              		.loc 2 63 23 view .LVU79
+ 324 000e 5340     		eors	r3, r2
+ 325 0010 DBB2     		uxtb	r3, r3
+ 326              	.LVL23:
+ 327              	.L15:
+  63:mayo_gf16.h   ****     else
+ 328              		.loc 2 63 23 view .LVU80
+ 329 0012 2370     		strb	r3, [r4]
+ 330              	.LBE15:
+ 331              	.LBE16:
+  66:mayo_gf16.h   **** 
+ 332              		.loc 2 66 1 view .LVU81
+ 333              		@ sp needed
+ 334 0014 10BD     		pop	{r4, pc}
+ 335              	.LVL24:
+ 336              	.L14:
+  65:mayo_gf16.h   **** }
+ 337              		.loc 2 65 9 is_stmt 1 view .LVU82
+ 338 0016 0F21     		movs	r1, #15
+ 339 0018 0A40     		ands	r2, r1
+ 340              	.LVL25:
+  65:mayo_gf16.h   **** }
+ 341              		.loc 2 65 9 is_stmt 0 view .LVU83
+ 342 001a 5340     		eors	r3, r2
+ 343 001c F9E7     		b	.L15
+ 344              		.cfi_endproc
+ 345              	.LFE5:
+ 347              		.section	.text.add_El_M_to_A.constprop.0,"ax",%progbits
+ 348              		.align	1
+ 349              		.syntax unified
+ 350              		.code	16
+ 351              		.thumb_func
+ 353              	add_El_M_to_A.constprop.0:
+ 354              	.LVL26:
+ 355              	.LFB16:
+   1:mayo_core.c   **** #include <stdint.h>
+   2:mayo_core.c   **** #include <stddef.h>
+   3:mayo_core.c   **** #include <string.h>
+   4:mayo_core.c   **** #include "mayo_params.h"
+   5:mayo_core.c   **** #include "mayo_gf16.h"
+   6:mayo_core.c   **** #include "mayo_shake.h"
+   7:mayo_core.c   **** #include "mayo_core.h"
+   8:mayo_core.c   **** 
+   9:mayo_core.c   **** /* ================================================================== */
+  10:mayo_core.c   **** /*  GF(16) multiplication table — 256 bytes in flash (.rodata)        */
+  11:mayo_core.c   **** /* ================================================================== */
+  12:mayo_core.c   **** 
+  13:mayo_core.c   **** const uint8_t GF16_MUL[256] = {
+  14:mayo_core.c   ****     0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+  15:mayo_core.c   ****     0x0,0x1,0x2,0x3,0x4,0x5,0x6,0x7,0x8,0x9,0xA,0xB,0xC,0xD,0xE,0xF,
+  16:mayo_core.c   ****     0x0,0x2,0x4,0x6,0x8,0xA,0xC,0xE,0x3,0x1,0x7,0x5,0xB,0x9,0xF,0xD,
+  17:mayo_core.c   ****     0x0,0x3,0x6,0x5,0xC,0xF,0xA,0x9,0xB,0x8,0xD,0xE,0x7,0x4,0x1,0x2,
+  18:mayo_core.c   ****     0x0,0x4,0x8,0xC,0x3,0x7,0xB,0xF,0x6,0x2,0xE,0xA,0x5,0x1,0xD,0x9,
+  19:mayo_core.c   ****     0x0,0x5,0xA,0xF,0x7,0x2,0xD,0x8,0xE,0xB,0x4,0x1,0x9,0xC,0x3,0x6,
+  20:mayo_core.c   ****     0x0,0x6,0xC,0xA,0xB,0xD,0x7,0x1,0x5,0x3,0x9,0xF,0xE,0x8,0x2,0x4,
+  21:mayo_core.c   ****     0x0,0x7,0xE,0x9,0xF,0x8,0x1,0x6,0xD,0xA,0x3,0x4,0x2,0x5,0xC,0xB,
+  22:mayo_core.c   ****     0x0,0x8,0x3,0xB,0x6,0xE,0x5,0xD,0xC,0x4,0xF,0x7,0xA,0x2,0x9,0x1,
+  23:mayo_core.c   ****     0x0,0x9,0x1,0x8,0x2,0xB,0x3,0xA,0x4,0xD,0x5,0xC,0x6,0xF,0x7,0xE,
+  24:mayo_core.c   ****     0x0,0xA,0x7,0xD,0xE,0x4,0x9,0x3,0xF,0x5,0x8,0x2,0x1,0xB,0x6,0xC,
+  25:mayo_core.c   ****     0x0,0xB,0x5,0xE,0xA,0x1,0xF,0x4,0x7,0xC,0x2,0x9,0xD,0x6,0x8,0x3,
+  26:mayo_core.c   ****     0x0,0xC,0xB,0x7,0x5,0x9,0xE,0x2,0xA,0x6,0x1,0xD,0xF,0x3,0x4,0x8,
+  27:mayo_core.c   ****     0x0,0xD,0x9,0x4,0x1,0xC,0x8,0x5,0x2,0xF,0xB,0x6,0x3,0xE,0xA,0x7,
+  28:mayo_core.c   ****     0x0,0xE,0xF,0x1,0xD,0x3,0x2,0xC,0x9,0x7,0x6,0x8,0x4,0xA,0xB,0x5,
+  29:mayo_core.c   ****     0x0,0xF,0xD,0x2,0x9,0x6,0x4,0xB,0x1,0xE,0xC,0x3,0x8,0x7,0x5,0xA,
+  30:mayo_core.c   **** };
+  31:mayo_core.c   **** 
+  32:mayo_core.c   **** /* ================================================================== */
+  33:mayo_core.c   **** /*  Global RAM buffers (all in .bss, counted against 4 KB budget)     */
+  34:mayo_core.c   **** /* ================================================================== */
+  35:mayo_core.c   **** 
+  36:mayo_core.c   **** uint8_t g_mayo_esk[MAYO_ESK_B];          /* 576 B: seedsk|seedpk|O|L  */
+  37:mayo_core.c   **** 
+  38:mayo_core.c   **** /* Work buffers shared between calls — large enough for signing */
+  39:mayo_core.c   **** static uint8_t g_A[MAYO_M * MAYO_KO / 2];  /* 160 B: system matrix A   */
+  40:mayo_core.c   **** static uint8_t g_Mi[MAYO_K][MAYO_M * MAYO_O / 2]; /* 160 B: all Mi     */
+  41:mayo_core.c   **** 
+  42:mayo_core.c   **** /* ================================================================== */
+  43:mayo_core.c   **** /*  Key expansion: mayo_expand_sk()                                    */
+  44:mayo_core.c   **** /* ================================================================== */
+  45:mayo_core.c   **** 
+  46:mayo_core.c   **** void mayo_expand_sk(const uint8_t seedsk[MAYO_SKSEED_B])
+  47:mayo_core.c   **** {
+  48:mayo_core.c   ****     uint8_t  shake_out[MAYO_PKSEED_B + MAYO_O_B]; /* 48 bytes on stack */
+  49:mayo_core.c   ****     uint8_t  decoded[16];                           /* one bitsliced pos */
+  50:mayo_core.c   ****     uint8_t  bs8[8];                                /* one bitsliced vec  */
+  51:mayo_core.c   ****     int r, s, d, a;
+  52:mayo_core.c   **** 
+  53:mayo_core.c   ****     /* --- 1. SHAKE256(seedsk) → seedpk (16B) || O_encoded (32B) --- */
+  54:mayo_core.c   ****     shake256_multi(seedsk, MAYO_SKSEED_B,
+  55:mayo_core.c   ****                    NULL, 0, NULL, 0, NULL, 0,
+  56:mayo_core.c   ****                    shake_out, sizeof(shake_out));
+  57:mayo_core.c   **** 
+  58:mayo_core.c   ****     /* Store seedsk, seedpk, O into ESK */
+  59:mayo_core.c   ****     memcpy(g_mayo_esk + MAYO_ESK_SEEDSK_OFF, seedsk,          MAYO_SKSEED_B);
+  60:mayo_core.c   ****     memcpy(g_mayo_esk + MAYO_ESK_SEEDPK_OFF, shake_out,       MAYO_PKSEED_B);
+  61:mayo_core.c   ****     memcpy(g_mayo_esk + MAYO_ESK_O_OFF,      shake_out + MAYO_PKSEED_B, MAYO_O_B);
+  62:mayo_core.c   **** 
+  63:mayo_core.c   ****     /* --- 2. Zero L --- */
+  64:mayo_core.c   ****     memset(g_mayo_esk + MAYO_ESK_L_OFF, 0, MAYO_L_B);
+  65:mayo_core.c   **** 
+  66:mayo_core.c   ****     /* --- 3. SHAKE256(seedpk) stream: compute L = (P1+P1^T)*O + P2 --- */
+  67:mayo_core.c   ****     shake256_init(&g_shake);
+  68:mayo_core.c   ****     shake256_absorb(&g_shake, shake_out /* seedpk */, MAYO_PKSEED_B);
+  69:mayo_core.c   ****     shake256_finalize(&g_shake);
+  70:mayo_core.c   **** 
+  71:mayo_core.c   ****     /* P1: upper-triangular positions (r, s) with r <= s, r in [V], s in [V] */
+  72:mayo_core.c   ****     for (r = 0; r < MAYO_V; r++) {
+  73:mayo_core.c   ****         for (s = r; s < MAYO_V; s++) {
+  74:mayo_core.c   ****             shake256_squeeze(&g_shake, bs8, 8);
+  75:mayo_core.c   ****             if (r == s) continue; /* diagonal: (P1+P1^T)[r,r] = 2*P1[r,r] = 0 */
+  76:mayo_core.c   **** 
+  77:mayo_core.c   ****             decode_bs8(bs8, decoded); /* decoded[a] = P1_a[r,s] for a in [M] */
+  78:mayo_core.c   **** 
+  79:mayo_core.c   ****             for (d = 0; d < MAYO_O; d++) {
+  80:mayo_core.c   ****                 uint8_t O_s_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, s * MAYO_O + d);
+  81:mayo_core.c   ****                 uint8_t O_r_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, r * MAYO_O + d);
+  82:mayo_core.c   ****                 for (a = 0; a < MAYO_M; a++) {
+  83:mayo_core.c   ****                     /* L[r,d,a] ^= P1_a[r,s] * O[s,d]  (upper part of P1+P1^T) */
+  84:mayo_core.c   ****                     nibble_add(g_mayo_esk + MAYO_ESK_L_OFF,
+  85:mayo_core.c   ****                                (r * MAYO_O + d) * MAYO_M + a,
+  86:mayo_core.c   ****                                gf16_mul(decoded[a], O_s_d));
+  87:mayo_core.c   ****                     /* L[s,d,a] ^= P1_a[r,s] * O[r,d]  (lower part of P1+P1^T) */
+  88:mayo_core.c   ****                     nibble_add(g_mayo_esk + MAYO_ESK_L_OFF,
+  89:mayo_core.c   ****                                (s * MAYO_O + d) * MAYO_M + a,
+  90:mayo_core.c   ****                                gf16_mul(decoded[a], O_r_d));
+  91:mayo_core.c   ****                 }
+  92:mayo_core.c   ****             }
+  93:mayo_core.c   ****         }
+  94:mayo_core.c   ****     }
+  95:mayo_core.c   **** 
+  96:mayo_core.c   ****     /* P2: all (r, d) positions, r in [V], d in [O] */
+  97:mayo_core.c   ****     for (r = 0; r < MAYO_V; r++) {
+  98:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+  99:mayo_core.c   ****             shake256_squeeze(&g_shake, bs8, 8);
+ 100:mayo_core.c   ****             decode_bs8(bs8, decoded); /* decoded[a] = P2_a[r,d] */
+ 101:mayo_core.c   ****             for (a = 0; a < MAYO_M; a++) {
+ 102:mayo_core.c   ****                 nibble_add(g_mayo_esk + MAYO_ESK_L_OFF,
+ 103:mayo_core.c   ****                            (r * MAYO_O + d) * MAYO_M + a,
+ 104:mayo_core.c   ****                            decoded[a]);
+ 105:mayo_core.c   ****             }
+ 106:mayo_core.c   ****         }
+ 107:mayo_core.c   ****     }
+ 108:mayo_core.c   **** }
+ 109:mayo_core.c   **** 
+ 110:mayo_core.c   **** /* ================================================================== */
+ 111:mayo_core.c   **** /*  Signing helpers                                                     */
+ 112:mayo_core.c   **** /* ================================================================== */
+ 113:mayo_core.c   **** 
+ 114:mayo_core.c   **** /*
+ 115:mayo_core.c   ****  * Compute Mi[eq*O + d] = sum_r  vi[r] * L[r,d,eq]
+ 116:mayo_core.c   ****  * Mi and vi are nibble-packed arrays.
+ 117:mayo_core.c   ****  */
+ 118:mayo_core.c   **** static void compute_Mi(uint8_t *Mi, const uint8_t *vi, const uint8_t *L)
+ 119:mayo_core.c   **** {
+ 120:mayo_core.c   ****     int r, d, eq;
+ 121:mayo_core.c   ****     memset(Mi, 0, MAYO_M * MAYO_O / 2);
+ 122:mayo_core.c   ****     for (r = 0; r < MAYO_V; r++) {
+ 123:mayo_core.c   ****         uint8_t vr = nibble_get(vi, r);
+ 124:mayo_core.c   ****         if (vr == 0) continue;
+ 125:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+ 126:mayo_core.c   ****             for (eq = 0; eq < MAYO_M; eq++) {
+ 127:mayo_core.c   ****                 uint8_t l_val = nibble_get(L, (r * MAYO_O + d) * MAYO_M + eq);
+ 128:mayo_core.c   ****                 nibble_add(Mi, eq * MAYO_O + d, gf16_mul(vr, l_val));
+ 129:mayo_core.c   ****             }
+ 130:mayo_core.c   ****         }
+ 131:mayo_core.c   ****     }
+ 132:mayo_core.c   **** }
+ 133:mayo_core.c   **** 
+ 134:mayo_core.c   **** /*
+ 135:mayo_core.c   ****  * y[eq] ^= (E^ell * u)[eq]  where E^ell is cyclic right rotation by ell.
+ 136:mayo_core.c   ****  * (E^ell * u)_eq = u[(eq - ell + M) % M]
+ 137:mayo_core.c   ****  */
+ 138:mayo_core.c   **** static void subtract_El_u(uint8_t *y, const uint8_t *u, int ell)
+ 139:mayo_core.c   **** {
+ 140:mayo_core.c   ****     int eq;
+ 141:mayo_core.c   ****     for (eq = 0; eq < MAYO_M; eq++) {
+ 142:mayo_core.c   ****         int src = (eq - ell + MAYO_M) % MAYO_M;
+ 143:mayo_core.c   ****         nibble_add(y, eq, nibble_get(u, src));
+ 144:mayo_core.c   ****     }
+ 145:mayo_core.c   **** }
+ 146:mayo_core.c   **** 
+ 147:mayo_core.c   **** /*
+ 148:mayo_core.c   ****  * A[:, block*O : (block+1)*O] ^= E^ell * M
+ 149:mayo_core.c   ****  * (E^ell * M)_{eq, d} = M_{(eq-ell+M)%M, d}
+ 150:mayo_core.c   ****  */
+ 151:mayo_core.c   **** static void add_El_M_to_A(uint8_t *A, const uint8_t *M, int block, int ell)
+ 356              		.loc 1 151 13 is_stmt 1 view -0
+ 357              		.cfi_startproc
+ 358              		@ args = 0, pretend = 0, frame = 16
+ 359              		@ frame_needed = 0, uses_anonymous_args = 0
+ 152:mayo_core.c   **** {
+ 153:mayo_core.c   ****     int eq, d;
+ 360              		.loc 1 153 5 view .LVU85
+ 154:mayo_core.c   ****     for (eq = 0; eq < MAYO_M; eq++) {
+ 361              		.loc 1 154 5 view .LVU86
+ 362              		.loc 1 154 21 discriminator 1 view .LVU87
+ 363 0000 2023     		movs	r3, #32
+ 151:mayo_core.c   **** {
+ 364              		.loc 1 151 13 is_stmt 0 view .LVU88
+ 365 0002 F0B5     		push	{r4, r5, r6, r7, lr}
+ 366              	.LCFI3:
+ 367              		.cfi_def_cfa_offset 20
+ 368              		.cfi_offset 4, -20
+ 369              		.cfi_offset 5, -16
+ 370              		.cfi_offset 6, -12
+ 371              		.cfi_offset 7, -8
+ 372              		.cfi_offset 14, -4
+ 373 0004 1025     		movs	r5, #16
+ 374 0006 85B0     		sub	sp, sp, #20
+ 375              	.LCFI4:
+ 376              		.cfi_def_cfa_offset 40
+ 377 0008 9B1A     		subs	r3, r3, r2
+ 151:mayo_core.c   **** {
+ 378              		.loc 1 151 13 view .LVU89
+ 379 000a 0390     		str	r0, [sp, #12]
+ 380 000c AD1A     		subs	r5, r5, r2
+ 381 000e 8E00     		lsls	r6, r1, #2
+ 382 0010 0293     		str	r3, [sp, #8]
+ 383              	.LVL27:
+ 384              	.L19:
+ 385              	.LBB18:
+ 155:mayo_core.c   ****         int src_eq = (eq - ell + MAYO_M) % MAYO_M;
+ 386              		.loc 1 155 9 is_stmt 1 view .LVU90
+ 156:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+ 387              		.loc 1 156 9 view .LVU91
+ 388              		.loc 1 156 23 discriminator 1 view .LVU92
+ 155:mayo_core.c   ****         int src_eq = (eq - ell + MAYO_M) % MAYO_M;
+ 389              		.loc 1 155 13 is_stmt 0 view .LVU93
+ 390 0012 114C     		ldr	r4, .L22
+ 391 0014 2C40     		ands	r4, r5
+ 392 0016 04D5     		bpl	.L17
+ 393 0018 1023     		movs	r3, #16
+ 394 001a 013C     		subs	r4, r4, #1
+ 395 001c 5B42     		rsbs	r3, r3, #0
+ 396 001e 1C43     		orrs	r4, r3
+ 397 0020 0134     		adds	r4, r4, #1
+ 398              	.L17:
+ 157:mayo_core.c   ****             nibble_add(A, eq * MAYO_KO + block * MAYO_O + d,
+ 158:mayo_core.c   ****                        nibble_get(M, src_eq * MAYO_O + d));
+ 399              		.loc 1 158 45 view .LVU94
+ 400 0022 3700     		movs	r7, r6
+ 401 0024 A400     		lsls	r4, r4, #2
+ 402 0026 231D     		adds	r3, r4, #4
+ 403 0028 0193     		str	r3, [sp, #4]
+ 404              	.LVL28:
+ 405              	.L18:
+ 157:mayo_core.c   ****             nibble_add(A, eq * MAYO_KO + block * MAYO_O + d,
+ 406              		.loc 1 157 13 is_stmt 1 view .LVU95
+ 407 002a 2100     		movs	r1, r4
+ 408 002c 0398     		ldr	r0, [sp, #12]
+ 409 002e FFF7FEFF 		bl	nibble_get
+ 410              	.LVL29:
+ 157:mayo_core.c   ****             nibble_add(A, eq * MAYO_KO + block * MAYO_O + d,
+ 411              		.loc 1 157 13 is_stmt 0 discriminator 1 view .LVU96
+ 412 0032 0A4B     		ldr	r3, .L22+4
+ 157:mayo_core.c   ****             nibble_add(A, eq * MAYO_KO + block * MAYO_O + d,
+ 413              		.loc 1 157 13 view .LVU97
+ 414 0034 0200     		movs	r2, r0
+ 157:mayo_core.c   ****             nibble_add(A, eq * MAYO_KO + block * MAYO_O + d,
+ 415              		.loc 1 157 13 discriminator 1 view .LVU98
+ 416 0036 3900     		movs	r1, r7
+ 417 0038 1800     		movs	r0, r3
+ 418 003a FFF7FEFF 		bl	nibble_add
+ 419              	.LVL30:
+ 156:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+ 420              		.loc 1 156 34 is_stmt 1 discriminator 3 view .LVU99
+ 156:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+ 421              		.loc 1 156 23 discriminator 1 view .LVU100
+ 422 003e 019B     		ldr	r3, [sp, #4]
+ 423 0040 0134     		adds	r4, r4, #1
+ 424              	.LVL31:
+ 156:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+ 425              		.loc 1 156 23 is_stmt 0 discriminator 1 view .LVU101
+ 426 0042 0137     		adds	r7, r7, #1
+ 427 0044 9C42     		cmp	r4, r3
+ 428 0046 F0D1     		bne	.L18
+ 429              	.LBE18:
+ 154:mayo_core.c   ****         int src_eq = (eq - ell + MAYO_M) % MAYO_M;
+ 430              		.loc 1 154 33 is_stmt 1 discriminator 2 view .LVU102
+ 431              	.LVL32:
+ 154:mayo_core.c   ****         int src_eq = (eq - ell + MAYO_M) % MAYO_M;
+ 432              		.loc 1 154 21 discriminator 1 view .LVU103
+ 433 0048 029B     		ldr	r3, [sp, #8]
+ 434 004a 0135     		adds	r5, r5, #1
+ 435              	.LVL33:
+ 154:mayo_core.c   ****         int src_eq = (eq - ell + MAYO_M) % MAYO_M;
+ 436              		.loc 1 154 21 is_stmt 0 discriminator 1 view .LVU104
+ 437 004c 1436     		adds	r6, r6, #20
+ 438 004e 9D42     		cmp	r5, r3
+ 439 0050 DFD1     		bne	.L19
+ 159:mayo_core.c   ****         }
+ 160:mayo_core.c   ****     }
+ 161:mayo_core.c   **** }
+ 440              		.loc 1 161 1 view .LVU105
+ 441 0052 05B0     		add	sp, sp, #20
+ 442              		@ sp needed
+ 443              	.LVL34:
+ 444              	.LVL35:
+ 445              		.loc 1 161 1 view .LVU106
+ 446 0054 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 447              	.L23:
+ 448 0056 C046     		.align	2
+ 449              	.L22:
+ 450 0058 0F000080 		.word	-2147483633
+ 451 005c 48010000 		.word	g_A
+ 452              		.cfi_endproc
+ 453              	.LFE16:
+ 455              		.section	.text.mayo_expand_sk,"ax",%progbits
+ 456              		.align	1
+ 457              		.global	mayo_expand_sk
+ 458              		.syntax unified
+ 459              		.code	16
+ 460              		.thumb_func
+ 462              	mayo_expand_sk:
+ 463              	.LVL36:
+ 464              	.LFB7:
+  47:mayo_core.c   ****     uint8_t  shake_out[MAYO_PKSEED_B + MAYO_O_B]; /* 48 bytes on stack */
+ 465              		.loc 1 47 1 is_stmt 1 view -0
+ 466              		.cfi_startproc
+ 467              		@ args = 0, pretend = 0, frame = 112
+ 468              		@ frame_needed = 0, uses_anonymous_args = 0
+  48:mayo_core.c   ****     uint8_t  decoded[16];                           /* one bitsliced pos */
+ 469              		.loc 1 48 5 view .LVU108
+  49:mayo_core.c   ****     uint8_t  bs8[8];                                /* one bitsliced vec  */
+ 470              		.loc 1 49 5 view .LVU109
+  50:mayo_core.c   ****     int r, s, d, a;
+ 471              		.loc 1 50 5 view .LVU110
+  51:mayo_core.c   **** 
+ 472              		.loc 1 51 5 view .LVU111
+  54:mayo_core.c   ****                    NULL, 0, NULL, 0, NULL, 0,
+ 473              		.loc 1 54 5 view .LVU112
+  47:mayo_core.c   ****     uint8_t  shake_out[MAYO_PKSEED_B + MAYO_O_B]; /* 48 bytes on stack */
+ 474              		.loc 1 47 1 is_stmt 0 view .LVU113
+ 475 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 476              	.LCFI5:
+ 477              		.cfi_def_cfa_offset 20
+ 478              		.cfi_offset 4, -20
+ 479              		.cfi_offset 5, -16
+ 480              		.cfi_offset 6, -12
+ 481              		.cfi_offset 7, -8
+ 482              		.cfi_offset 14, -4
+  54:mayo_core.c   ****                    NULL, 0, NULL, 0, NULL, 0,
+ 483              		.loc 1 54 5 view .LVU114
+ 484 0002 3023     		movs	r3, #48
+ 485 0004 0024     		movs	r4, #0
+  47:mayo_core.c   ****     uint8_t  shake_out[MAYO_PKSEED_B + MAYO_O_B]; /* 48 bytes on stack */
+ 486              		.loc 1 47 1 view .LVU115
+ 487 0006 0500     		movs	r5, r0
+ 488 0008 A3B0     		sub	sp, sp, #140
+ 489              	.LCFI6:
+ 490              		.cfi_def_cfa_offset 160
+  54:mayo_core.c   ****                    NULL, 0, NULL, 0, NULL, 0,
+ 491              		.loc 1 54 5 view .LVU116
+ 492 000a 16AE     		add	r6, sp, #88
+ 493 000c 2200     		movs	r2, r4
+ 494 000e 1021     		movs	r1, #16
+ 495 0010 0593     		str	r3, [sp, #20]
+ 496 0012 0496     		str	r6, [sp, #16]
+ 497 0014 2300     		movs	r3, r4
+ 498 0016 0394     		str	r4, [sp, #12]
+ 499 0018 0294     		str	r4, [sp, #8]
+ 500 001a 0194     		str	r4, [sp, #4]
+ 501 001c 0094     		str	r4, [sp]
+ 502 001e FFF7FEFF 		bl	shake256_multi
+ 503              	.LVL37:
+  59:mayo_core.c   ****     memcpy(g_mayo_esk + MAYO_ESK_SEEDPK_OFF, shake_out,       MAYO_PKSEED_B);
+ 504              		.loc 1 59 5 is_stmt 1 view .LVU117
+ 505 0022 2900     		movs	r1, r5
+ 506 0024 1022     		movs	r2, #16
+ 507 0026 4648     		ldr	r0, .L40
+ 508 0028 FFF7FEFF 		bl	memcpy
+ 509              	.LVL38:
+  60:mayo_core.c   ****     memcpy(g_mayo_esk + MAYO_ESK_O_OFF,      shake_out + MAYO_PKSEED_B, MAYO_O_B);
+ 510              		.loc 1 60 5 view .LVU118
+ 511 002c 1022     		movs	r2, #16
+ 512 002e 3100     		movs	r1, r6
+ 513 0030 4448     		ldr	r0, .L40+4
+ 514 0032 FFF7FEFF 		bl	memcpy
+ 515              	.LVL39:
+  61:mayo_core.c   **** 
+ 516              		.loc 1 61 5 view .LVU119
+ 517 0036 2022     		movs	r2, #32
+ 518 0038 1AA9     		add	r1, sp, #104
+ 519 003a 4348     		ldr	r0, .L40+8
+ 520 003c FFF7FEFF 		bl	memcpy
+ 521              	.LVL40:
+  64:mayo_core.c   **** 
+ 522              		.loc 1 64 5 view .LVU120
+ 523 0040 8022     		movs	r2, #128
+ 524 0042 2100     		movs	r1, r4
+ 525 0044 9200     		lsls	r2, r2, #2
+ 526 0046 4148     		ldr	r0, .L40+12
+ 527 0048 FFF7FEFF 		bl	memset
+ 528              	.LVL41:
+  67:mayo_core.c   ****     shake256_absorb(&g_shake, shake_out /* seedpk */, MAYO_PKSEED_B);
+ 529              		.loc 1 67 5 view .LVU121
+ 530 004c 404D     		ldr	r5, .L40+16
+ 531              	.LVL42:
+  67:mayo_core.c   ****     shake256_absorb(&g_shake, shake_out /* seedpk */, MAYO_PKSEED_B);
+ 532              		.loc 1 67 5 is_stmt 0 view .LVU122
+ 533 004e 2800     		movs	r0, r5
+ 534 0050 FFF7FEFF 		bl	shake256_init
+ 535              	.LVL43:
+  68:mayo_core.c   ****     shake256_finalize(&g_shake);
+ 536              		.loc 1 68 5 is_stmt 1 view .LVU123
+ 537 0054 2800     		movs	r0, r5
+ 538 0056 1022     		movs	r2, #16
+ 539 0058 3100     		movs	r1, r6
+ 540 005a FFF7FEFF 		bl	shake256_absorb
+ 541              	.LVL44:
+  69:mayo_core.c   **** 
+ 542              		.loc 1 69 5 view .LVU124
+ 543 005e 2800     		movs	r0, r5
+ 544 0060 FFF7FEFF 		bl	shake256_finalize
+ 545              	.LVL45:
+  72:mayo_core.c   ****         for (s = r; s < MAYO_V; s++) {
+ 546              		.loc 1 72 5 view .LVU125
+  72:mayo_core.c   ****         for (s = r; s < MAYO_V; s++) {
+ 547              		.loc 1 72 19 discriminator 1 view .LVU126
+ 548              	.L25:
+  73:mayo_core.c   ****             shake256_squeeze(&g_shake, bs8, 8);
+ 549              		.loc 1 73 23 discriminator 1 view .LVU127
+  73:mayo_core.c   ****             shake256_squeeze(&g_shake, bs8, 8);
+ 550              		.loc 1 73 16 is_stmt 0 view .LVU128
+ 551 0064 2700     		movs	r7, r4
+ 552 0066 A300     		lsls	r3, r4, #2
+ 553 0068 0D93     		str	r3, [sp, #52]
+ 554              	.LVL46:
+ 555              	.L29:
+  74:mayo_core.c   ****             if (r == s) continue; /* diagonal: (P1+P1^T)[r,r] = 2*P1[r,r] = 0 */
+ 556              		.loc 1 74 13 is_stmt 1 view .LVU129
+ 557 006a 0822     		movs	r2, #8
+ 558 006c 3848     		ldr	r0, .L40+16
+ 559 006e 10A9     		add	r1, sp, #64
+ 560 0070 FFF7FEFF 		bl	shake256_squeeze
+ 561              	.LVL47:
+  75:mayo_core.c   **** 
+ 562              		.loc 1 75 13 view .LVU130
+  75:mayo_core.c   **** 
+ 563              		.loc 1 75 16 is_stmt 0 view .LVU131
+ 564 0074 BC42     		cmp	r4, r7
+ 565 0076 3CD0     		beq	.L26
+  77:mayo_core.c   **** 
+ 566              		.loc 1 77 13 is_stmt 1 view .LVU132
+ 567 0078 12A9     		add	r1, sp, #72
+ 568 007a 10A8     		add	r0, sp, #64
+ 569 007c BE00     		lsls	r6, r7, #2
+ 570 007e FFF7FEFF 		bl	decode_bs8
+ 571              	.LVL48:
+  79:mayo_core.c   ****                 uint8_t O_s_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, s * MAYO_O + d);
+ 572              		.loc 1 79 13 view .LVU133
+  79:mayo_core.c   ****                 uint8_t O_s_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, s * MAYO_O + d);
+ 573              		.loc 1 79 27 discriminator 1 view .LVU134
+ 574 0082 331D     		adds	r3, r6, #4
+ 575 0084 0C93     		str	r3, [sp, #48]
+  77:mayo_core.c   **** 
+ 576              		.loc 1 77 13 is_stmt 0 view .LVU135
+ 577 0086 0D9B     		ldr	r3, [sp, #52]
+ 578 0088 0793     		str	r3, [sp, #28]
+ 579              	.LVL49:
+ 580              	.L28:
+ 581              	.LBB19:
+  80:mayo_core.c   ****                 uint8_t O_r_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, r * MAYO_O + d);
+ 582              		.loc 1 80 17 is_stmt 1 view .LVU136
+  80:mayo_core.c   ****                 uint8_t O_r_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, r * MAYO_O + d);
+ 583              		.loc 1 80 33 is_stmt 0 view .LVU137
+ 584 008a 2F4D     		ldr	r5, .L40+8
+ 585 008c 3100     		movs	r1, r6
+ 586 008e 2800     		movs	r0, r5
+ 587 0090 FFF7FEFF 		bl	nibble_get
+ 588              	.LVL50:
+  81:mayo_core.c   ****                 for (a = 0; a < MAYO_M; a++) {
+ 589              		.loc 1 81 33 view .LVU138
+ 590 0094 0799     		ldr	r1, [sp, #28]
+  80:mayo_core.c   ****                 uint8_t O_r_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, r * MAYO_O + d);
+ 591              		.loc 1 80 33 view .LVU139
+ 592 0096 0E90     		str	r0, [sp, #56]
+ 593              	.LVL51:
+  81:mayo_core.c   ****                 for (a = 0; a < MAYO_M; a++) {
+ 594              		.loc 1 81 17 is_stmt 1 view .LVU140
+  81:mayo_core.c   ****                 for (a = 0; a < MAYO_M; a++) {
+ 595              		.loc 1 81 33 is_stmt 0 view .LVU141
+ 596 0098 2800     		movs	r0, r5
+ 597 009a FFF7FEFF 		bl	nibble_get
+ 598              	.LVL52:
+  82:mayo_core.c   ****                     /* L[r,d,a] ^= P1_a[r,s] * O[s,d]  (upper part of P1+P1^T) */
+ 599              		.loc 1 82 24 view .LVU142
+ 600 009e 0025     		movs	r5, #0
+ 601 00a0 079B     		ldr	r3, [sp, #28]
+  81:mayo_core.c   ****                 for (a = 0; a < MAYO_M; a++) {
+ 602              		.loc 1 81 33 view .LVU143
+ 603 00a2 0F90     		str	r0, [sp, #60]
+ 604              	.LVL53:
+  82:mayo_core.c   ****                     /* L[r,d,a] ^= P1_a[r,s] * O[s,d]  (upper part of P1+P1^T) */
+ 605              		.loc 1 82 17 is_stmt 1 view .LVU144
+  82:mayo_core.c   ****                     /* L[r,d,a] ^= P1_a[r,s] * O[s,d]  (upper part of P1+P1^T) */
+ 606              		.loc 1 82 31 discriminator 1 view .LVU145
+ 607 00a4 1B01     		lsls	r3, r3, #4
+ 608 00a6 0A93     		str	r3, [sp, #40]
+ 609 00a8 3301     		lsls	r3, r6, #4
+ 610 00aa 0B93     		str	r3, [sp, #44]
+ 611              	.LVL54:
+ 612              	.L27:
+  84:mayo_core.c   ****                                (r * MAYO_O + d) * MAYO_M + a,
+ 613              		.loc 1 84 21 view .LVU146
+ 614 00ac 12AB     		add	r3, sp, #72
+ 615 00ae EB5C     		ldrb	r3, [r5, r3]
+ 616 00b0 0E99     		ldr	r1, [sp, #56]
+ 617 00b2 1800     		movs	r0, r3
+ 618 00b4 0893     		str	r3, [sp, #32]
+ 619 00b6 FFF7FEFF 		bl	gf16_mul
+ 620              	.LVL55:
+ 621 00ba 0A9B     		ldr	r3, [sp, #40]
+ 622 00bc 0200     		movs	r2, r0
+ 623 00be E918     		adds	r1, r5, r3
+  84:mayo_core.c   ****                                (r * MAYO_O + d) * MAYO_M + a,
+ 624              		.loc 1 84 21 is_stmt 0 discriminator 1 view .LVU147
+ 625 00c0 224B     		ldr	r3, .L40+12
+ 626 00c2 1800     		movs	r0, r3
+ 627 00c4 0993     		str	r3, [sp, #36]
+ 628 00c6 FFF7FEFF 		bl	nibble_add
+ 629              	.LVL56:
+  88:mayo_core.c   ****                                (s * MAYO_O + d) * MAYO_M + a,
+ 630              		.loc 1 88 21 is_stmt 1 view .LVU148
+ 631 00ca 0F99     		ldr	r1, [sp, #60]
+ 632 00cc 0898     		ldr	r0, [sp, #32]
+ 633 00ce FFF7FEFF 		bl	gf16_mul
+ 634              	.LVL57:
+ 635 00d2 0B9B     		ldr	r3, [sp, #44]
+ 636 00d4 0200     		movs	r2, r0
+ 637 00d6 E918     		adds	r1, r5, r3
+  88:mayo_core.c   ****                                (s * MAYO_O + d) * MAYO_M + a,
+ 638              		.loc 1 88 21 is_stmt 0 discriminator 1 view .LVU149
+ 639 00d8 0998     		ldr	r0, [sp, #36]
+  82:mayo_core.c   ****                     /* L[r,d,a] ^= P1_a[r,s] * O[s,d]  (upper part of P1+P1^T) */
+ 640              		.loc 1 82 42 discriminator 3 view .LVU150
+ 641 00da 0135     		adds	r5, r5, #1
+ 642              	.LVL58:
+  88:mayo_core.c   ****                                (s * MAYO_O + d) * MAYO_M + a,
+ 643              		.loc 1 88 21 discriminator 1 view .LVU151
+ 644 00dc FFF7FEFF 		bl	nibble_add
+ 645              	.LVL59:
+  82:mayo_core.c   ****                     /* L[r,d,a] ^= P1_a[r,s] * O[s,d]  (upper part of P1+P1^T) */
+ 646              		.loc 1 82 42 is_stmt 1 discriminator 3 view .LVU152
+  82:mayo_core.c   ****                     /* L[r,d,a] ^= P1_a[r,s] * O[s,d]  (upper part of P1+P1^T) */
+ 647              		.loc 1 82 31 discriminator 1 view .LVU153
+ 648 00e0 102D     		cmp	r5, #16
+ 649 00e2 E3D1     		bne	.L27
+ 650              	.LBE19:
+  79:mayo_core.c   ****                 uint8_t O_s_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, s * MAYO_O + d);
+ 651              		.loc 1 79 38 discriminator 2 view .LVU154
+ 652              	.LVL60:
+  79:mayo_core.c   ****                 uint8_t O_s_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, s * MAYO_O + d);
+ 653              		.loc 1 79 27 discriminator 1 view .LVU155
+ 654 00e4 079B     		ldr	r3, [sp, #28]
+ 655 00e6 0136     		adds	r6, r6, #1
+ 656              	.LVL61:
+  79:mayo_core.c   ****                 uint8_t O_s_d = nibble_get(g_mayo_esk + MAYO_ESK_O_OFF, s * MAYO_O + d);
+ 657              		.loc 1 79 27 is_stmt 0 discriminator 1 view .LVU156
+ 658 00e8 0133     		adds	r3, r3, #1
+ 659 00ea 0793     		str	r3, [sp, #28]
+ 660 00ec 0C9B     		ldr	r3, [sp, #48]
+ 661 00ee 9E42     		cmp	r6, r3
+ 662 00f0 CBD1     		bne	.L28
+ 663              	.LVL62:
+ 664              	.L26:
+  73:mayo_core.c   ****             shake256_squeeze(&g_shake, bs8, 8);
+ 665              		.loc 1 73 34 is_stmt 1 discriminator 2 view .LVU157
+ 666 00f2 0137     		adds	r7, r7, #1
+ 667              	.LVL63:
+  73:mayo_core.c   ****             shake256_squeeze(&g_shake, bs8, 8);
+ 668              		.loc 1 73 23 discriminator 1 view .LVU158
+ 669 00f4 102F     		cmp	r7, #16
+ 670 00f6 B8D1     		bne	.L29
+  72:mayo_core.c   ****         for (s = r; s < MAYO_V; s++) {
+ 671              		.loc 1 72 30 discriminator 2 view .LVU159
+ 672 00f8 0134     		adds	r4, r4, #1
+ 673              	.LVL64:
+  72:mayo_core.c   ****         for (s = r; s < MAYO_V; s++) {
+ 674              		.loc 1 72 19 discriminator 1 view .LVU160
+ 675 00fa 102C     		cmp	r4, #16
+ 676 00fc B2D1     		bne	.L25
+ 677 00fe 0026     		movs	r6, #0
+ 678              	.LVL65:
+ 679              	.L30:
+  98:mayo_core.c   ****             shake256_squeeze(&g_shake, bs8, 8);
+ 680              		.loc 1 98 23 discriminator 1 view .LVU161
+ 681 0100 3401     		lsls	r4, r6, #4
+ 682 0102 2300     		movs	r3, r4
+ 683 0104 4033     		adds	r3, r3, #64
+ 684 0106 0436     		adds	r6, r6, #4
+ 685 0108 0793     		str	r3, [sp, #28]
+ 686              	.LVL66:
+ 687              	.L32:
+  99:mayo_core.c   ****             decode_bs8(bs8, decoded); /* decoded[a] = P2_a[r,d] */
+ 688              		.loc 1 99 13 view .LVU162
+ 689 010a 0822     		movs	r2, #8
+ 690 010c 1048     		ldr	r0, .L40+16
+ 691 010e 10A9     		add	r1, sp, #64
+ 100:mayo_core.c   ****             for (a = 0; a < MAYO_M; a++) {
+ 692              		.loc 1 100 13 is_stmt 0 view .LVU163
+ 693 0110 12AF     		add	r7, sp, #72
+  99:mayo_core.c   ****             decode_bs8(bs8, decoded); /* decoded[a] = P2_a[r,d] */
+ 694              		.loc 1 99 13 view .LVU164
+ 695 0112 FFF7FEFF 		bl	shake256_squeeze
+ 696              	.LVL67:
+ 100:mayo_core.c   ****             for (a = 0; a < MAYO_M; a++) {
+ 697              		.loc 1 100 13 is_stmt 1 view .LVU165
+ 698 0116 3900     		movs	r1, r7
+ 699 0118 10A8     		add	r0, sp, #64
+ 700 011a FFF7FEFF 		bl	decode_bs8
+ 701              	.LVL68:
+ 101:mayo_core.c   ****                 nibble_add(g_mayo_esk + MAYO_ESK_L_OFF,
+ 702              		.loc 1 101 13 view .LVU166
+ 101:mayo_core.c   ****                 nibble_add(g_mayo_esk + MAYO_ESK_L_OFF,
+ 703              		.loc 1 101 27 discriminator 1 view .LVU167
+ 101:mayo_core.c   ****                 nibble_add(g_mayo_esk + MAYO_ESK_L_OFF,
+ 704              		.loc 1 101 20 is_stmt 0 view .LVU168
+ 705 011e 0025     		movs	r5, #0
+ 706              	.LVL69:
+ 707              	.L31:
+ 102:mayo_core.c   ****                            (r * MAYO_O + d) * MAYO_M + a,
+ 708              		.loc 1 102 17 is_stmt 1 view .LVU169
+ 709 0120 7A5D     		ldrb	r2, [r7, r5]
+ 710 0122 2919     		adds	r1, r5, r4
+ 711 0124 0948     		ldr	r0, .L40+12
+ 101:mayo_core.c   ****                 nibble_add(g_mayo_esk + MAYO_ESK_L_OFF,
+ 712              		.loc 1 101 38 is_stmt 0 discriminator 3 view .LVU170
+ 713 0126 0135     		adds	r5, r5, #1
+ 714              	.LVL70:
+ 102:mayo_core.c   ****                            (r * MAYO_O + d) * MAYO_M + a,
+ 715              		.loc 1 102 17 view .LVU171
+ 716 0128 FFF7FEFF 		bl	nibble_add
+ 717              	.LVL71:
+ 101:mayo_core.c   ****                 nibble_add(g_mayo_esk + MAYO_ESK_L_OFF,
+ 718              		.loc 1 101 38 is_stmt 1 discriminator 3 view .LVU172
+ 101:mayo_core.c   ****                 nibble_add(g_mayo_esk + MAYO_ESK_L_OFF,
+ 719              		.loc 1 101 27 discriminator 1 view .LVU173
+ 720 012c 102D     		cmp	r5, #16
+ 721 012e F7D1     		bne	.L31
+  98:mayo_core.c   ****             shake256_squeeze(&g_shake, bs8, 8);
+ 722              		.loc 1 98 34 discriminator 2 view .LVU174
+  98:mayo_core.c   ****             shake256_squeeze(&g_shake, bs8, 8);
+ 723              		.loc 1 98 23 discriminator 1 view .LVU175
+ 724 0130 079B     		ldr	r3, [sp, #28]
+ 725 0132 1034     		adds	r4, r4, #16
+ 726 0134 9C42     		cmp	r4, r3
+ 727 0136 E8D1     		bne	.L32
+  97:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+ 728              		.loc 1 97 30 discriminator 2 view .LVU176
+  97:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+ 729              		.loc 1 97 19 discriminator 1 view .LVU177
+ 730 0138 402E     		cmp	r6, #64
+ 731 013a E1D1     		bne	.L30
+ 108:mayo_core.c   **** 
+ 732              		.loc 1 108 1 is_stmt 0 view .LVU178
+ 733 013c 23B0     		add	sp, sp, #140
+ 734              		@ sp needed
+ 735              	.LVL72:
+ 108:mayo_core.c   **** 
+ 736              		.loc 1 108 1 view .LVU179
+ 737 013e F0BD     		pop	{r4, r5, r6, r7, pc}
+ 738              	.L41:
+ 739              		.align	2
+ 740              	.L40:
+ 741 0140 00000000 		.word	g_mayo_esk
+ 742 0144 10000000 		.word	g_mayo_esk+16
+ 743 0148 20000000 		.word	g_mayo_esk+32
+ 744 014c 40000000 		.word	g_mayo_esk+64
+ 745 0150 00000000 		.word	g_shake
+ 746              		.cfi_endproc
+ 747              	.LFE7:
+ 749              		.section	.text.mayo_sign,"ax",%progbits
+ 750              		.align	1
+ 751              		.global	mayo_sign
+ 752              		.syntax unified
+ 753              		.code	16
+ 754              		.thumb_func
+ 756              	mayo_sign:
+ 757              	.LVL73:
+ 758              	.LFB13:
+ 162:mayo_core.c   **** 
+ 163:mayo_core.c   **** /*
+ 164:mayo_core.c   ****  * Gaussian elimination over GF(16): put (A | y) in row-echelon form.
+ 165:mayo_core.c   ****  * A:   m x ko  nibble array (modified in-place)
+ 166:mayo_core.c   ****  * aug: m       nibble array (the augmented column, modified in-place)
+ 167:mayo_core.c   ****  * Returns the pivot rank (should be MAYO_M for a full-rank system).
+ 168:mayo_core.c   ****  */
+ 169:mayo_core.c   **** static int gauss_elim(uint8_t *A, uint8_t *aug)
+ 170:mayo_core.c   **** {
+ 171:mayo_core.c   ****     int pr = 0, pc = 0; /* pivot row, pivot column */
+ 172:mayo_core.c   ****     int i, c;
+ 173:mayo_core.c   **** 
+ 174:mayo_core.c   ****     while (pr < MAYO_M && pc < MAYO_KO) {
+ 175:mayo_core.c   ****         /* Find pivot in column pc from row pr downward */
+ 176:mayo_core.c   ****         int next = -1;
+ 177:mayo_core.c   ****         for (i = pr; i < MAYO_M; i++) {
+ 178:mayo_core.c   ****             if (nibble_get(A, i * MAYO_KO + pc) != 0) { next = i; break; }
+ 179:mayo_core.c   ****         }
+ 180:mayo_core.c   ****         if (next < 0) { pc++; continue; }
+ 181:mayo_core.c   **** 
+ 182:mayo_core.c   ****         /* Swap rows pr and next */
+ 183:mayo_core.c   ****         if (next != pr) {
+ 184:mayo_core.c   ****             for (c = 0; c < MAYO_KO; c++) {
+ 185:mayo_core.c   ****                 uint8_t tmp = nibble_get(A, pr * MAYO_KO + c);
+ 186:mayo_core.c   ****                 nibble_set(A, pr * MAYO_KO + c,
+ 187:mayo_core.c   ****                            nibble_get(A, next * MAYO_KO + c));
+ 188:mayo_core.c   ****                 nibble_set(A, next * MAYO_KO + c, tmp);
+ 189:mayo_core.c   ****             }
+ 190:mayo_core.c   ****             uint8_t tmp = nibble_get(aug, pr);
+ 191:mayo_core.c   ****             nibble_set(aug, pr, nibble_get(aug, next));
+ 192:mayo_core.c   ****             nibble_set(aug, next, tmp);
+ 193:mayo_core.c   ****         }
+ 194:mayo_core.c   **** 
+ 195:mayo_core.c   ****         /* Scale pivot row so leading entry = 1 */
+ 196:mayo_core.c   ****         uint8_t piv = nibble_get(A, pr * MAYO_KO + pc);
+ 197:mayo_core.c   ****         uint8_t inv = gf16_inv(piv);
+ 198:mayo_core.c   ****         for (c = pc; c < MAYO_KO; c++) {
+ 199:mayo_core.c   ****             nibble_set(A, pr * MAYO_KO + c,
+ 200:mayo_core.c   ****                        gf16_mul(nibble_get(A, pr * MAYO_KO + c), inv));
+ 201:mayo_core.c   ****         }
+ 202:mayo_core.c   ****         nibble_set(aug, pr, gf16_mul(nibble_get(aug, pr), inv));
+ 203:mayo_core.c   **** 
+ 204:mayo_core.c   ****         /* Eliminate all other rows in column pc */
+ 205:mayo_core.c   ****         for (i = 0; i < MAYO_M; i++) {
+ 206:mayo_core.c   ****             if (i == pr) continue;
+ 207:mayo_core.c   ****             uint8_t factor = nibble_get(A, i * MAYO_KO + pc);
+ 208:mayo_core.c   ****             if (factor == 0) continue;
+ 209:mayo_core.c   ****             for (c = pc; c < MAYO_KO; c++) {
+ 210:mayo_core.c   ****                 nibble_add(A, i * MAYO_KO + c,
+ 211:mayo_core.c   ****                            gf16_mul(factor, nibble_get(A, pr * MAYO_KO + c)));
+ 212:mayo_core.c   ****             }
+ 213:mayo_core.c   ****             nibble_add(aug, i, gf16_mul(factor, nibble_get(aug, pr)));
+ 214:mayo_core.c   ****         }
+ 215:mayo_core.c   **** 
+ 216:mayo_core.c   ****         pr++; pc++;
+ 217:mayo_core.c   ****     }
+ 218:mayo_core.c   ****     return pr;
+ 219:mayo_core.c   **** }
+ 220:mayo_core.c   **** 
+ 221:mayo_core.c   **** /*
+ 222:mayo_core.c   ****  * SampleSolution: given system A*x = y and randomness r,
+ 223:mayo_core.c   ****  * find x = r + particular_solution.
+ 224:mayo_core.c   ****  * x_out: ko nibbles.  Returns 0 on success, -1 if rank < m.
+ 225:mayo_core.c   ****  */
+ 226:mayo_core.c   **** static int sample_solution(uint8_t *x_out,
+ 227:mayo_core.c   ****                             const uint8_t *r_nibbles,
+ 228:mayo_core.c   ****                             uint8_t *A,   /* modified in-place */
+ 229:mayo_core.c   ****                             uint8_t *y)   /* modified in-place */
+ 230:mayo_core.c   **** {
+ 231:mayo_core.c   ****     int col, eq;
+ 232:mayo_core.c   **** 
+ 233:mayo_core.c   ****     /* x ← r */
+ 234:mayo_core.c   ****     memcpy(x_out, r_nibbles, (MAYO_KO + 1) / 2);
+ 235:mayo_core.c   **** 
+ 236:mayo_core.c   ****     /* y ← y - A*r */
+ 237:mayo_core.c   ****     for (eq = 0; eq < MAYO_M; eq++) {
+ 238:mayo_core.c   ****         uint8_t t = 0;
+ 239:mayo_core.c   ****         for (col = 0; col < MAYO_KO; col++)
+ 240:mayo_core.c   ****             t ^= gf16_mul(nibble_get(A, eq * MAYO_KO + col),
+ 241:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 242:mayo_core.c   ****         nibble_add(y, eq, t);
+ 243:mayo_core.c   ****     }
+ 244:mayo_core.c   **** 
+ 245:mayo_core.c   ****     /* Row-reduce (A | y) */
+ 246:mayo_core.c   ****     int rank = gauss_elim(A, y);
+ 247:mayo_core.c   ****     if (rank < MAYO_M) return -1;
+ 248:mayo_core.c   **** 
+ 249:mayo_core.c   ****     /* Back-substitute: for each leading-1 row, read off free variable */
+ 250:mayo_core.c   ****     /* After full RREF the pivot columns hold the solution directly    */
+ 251:mayo_core.c   ****     for (eq = 0; eq < MAYO_M; eq++) {
+ 252:mayo_core.c   ****         /* find pivot column of row eq */
+ 253:mayo_core.c   ****         for (col = 0; col < MAYO_KO; col++) {
+ 254:mayo_core.c   ****             if (nibble_get(A, eq * MAYO_KO + col) == 1) {
+ 255:mayo_core.c   ****                 /* check it's really a pivot (all others in col are 0) */
+ 256:mayo_core.c   ****                 int is_pivot = 1;
+ 257:mayo_core.c   ****                 int i;
+ 258:mayo_core.c   ****                 for (i = 0; i < MAYO_M; i++) {
+ 259:mayo_core.c   ****                     if (i != eq && nibble_get(A, i * MAYO_KO + col) != 0) {
+ 260:mayo_core.c   ****                         is_pivot = 0; break;
+ 261:mayo_core.c   ****                     }
+ 262:mayo_core.c   ****                 }
+ 263:mayo_core.c   ****                 if (is_pivot) {
+ 264:mayo_core.c   ****                     nibble_add(x_out, col, nibble_get(y, eq));
+ 265:mayo_core.c   ****                     break;
+ 266:mayo_core.c   ****                 }
+ 267:mayo_core.c   ****             }
+ 268:mayo_core.c   ****         }
+ 269:mayo_core.c   ****     }
+ 270:mayo_core.c   **** 
+ 271:mayo_core.c   ****     return 0;
+ 272:mayo_core.c   **** }
+ 273:mayo_core.c   **** 
+ 274:mayo_core.c   **** /* ================================================================== */
+ 275:mayo_core.c   **** /*  mayo_sign()                                                         */
+ 276:mayo_core.c   **** /* ================================================================== */
+ 277:mayo_core.c   **** 
+ 278:mayo_core.c   **** int mayo_sign(const uint8_t *msg, uint8_t msg_len,
+ 279:mayo_core.c   ****               uint8_t sig[MAYO_SIG_B])
+ 280:mayo_core.c   **** {
+ 759              		.loc 1 280 1 is_stmt 1 view -0
+ 760              		.cfi_startproc
+ 761              		@ args = 0, pretend = 0, frame = 304
+ 762              		@ frame_needed = 0, uses_anonymous_args = 0
+ 281:mayo_core.c   ****     const uint8_t *seedsk = g_mayo_esk + MAYO_ESK_SEEDSK_OFF;
+ 763              		.loc 1 281 5 view .LVU181
+ 282:mayo_core.c   ****     const uint8_t *L      = g_mayo_esk + MAYO_ESK_L_OFF;
+ 764              		.loc 1 282 5 view .LVU182
+ 283:mayo_core.c   ****     const uint8_t *O      = g_mayo_esk + MAYO_ESK_O_OFF;
+ 765              		.loc 1 283 5 view .LVU183
+ 284:mayo_core.c   **** 
+ 285:mayo_core.c   ****     /* Buffers on stack — sized for MAYO-micro */
+ 286:mayo_core.c   ****     uint8_t M_digest[MAYO_DIGEST_B];
+ 766              		.loc 1 286 5 view .LVU184
+ 287:mayo_core.c   ****     uint8_t salt[MAYO_SALT_B];
+ 767              		.loc 1 287 5 view .LVU185
+ 288:mayo_core.c   ****     uint8_t t[MAYO_M / 2];           /* target t in F16^m,  8 bytes */
+ 768              		.loc 1 288 5 view .LVU186
+ 289:mayo_core.c   ****     uint8_t y[MAYO_M / 2];           /* running y = t - vinegar sum */
+ 769              		.loc 1 289 5 view .LVU187
+ 290:mayo_core.c   **** 
+ 291:mayo_core.c   ****     /* V buffer: k vinegar vectors + randomness r (nibble-packed) */
+ 292:mayo_core.c   ****     uint8_t V_buf[MAYO_K * MAYO_V_B + (MAYO_KO + 1) / 2]; /* 50 B */
+ 770              		.loc 1 292 5 view .LVU188
+ 293:mayo_core.c   ****     uint8_t *r_nibbles = V_buf + MAYO_K * MAYO_V_B;        /* last 10 B */
+ 771              		.loc 1 293 5 view .LVU189
+ 280:mayo_core.c   ****     const uint8_t *seedsk = g_mayo_esk + MAYO_ESK_SEEDSK_OFF;
+ 772              		.loc 1 280 1 is_stmt 0 view .LVU190
+ 773 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 774              	.LCFI7:
+ 775              		.cfi_def_cfa_offset 20
+ 776              		.cfi_offset 4, -20
+ 777              		.cfi_offset 5, -16
+ 778              		.cfi_offset 6, -12
+ 779              		.cfi_offset 7, -8
+ 780              		.cfi_offset 14, -4
+ 294:mayo_core.c   **** 
+ 295:mayo_core.c   ****     /* u_all[ell]: vinegar-vinegar contributions, one per pair */
+ 296:mayo_core.c   ****     uint8_t u_all[MAYO_NPAIRS][MAYO_M / 2]; /* 15 * 8 = 120 B */
+ 297:mayo_core.c   **** 
+ 298:mayo_core.c   ****     uint8_t bs8[8];
+ 299:mayo_core.c   ****     uint8_t decoded[16];
+ 300:mayo_core.c   **** 
+ 301:mayo_core.c   ****     int i, j, d, a, eq, ell, ctr;
+ 302:mayo_core.c   **** 
+ 303:mayo_core.c   ****     /* -------------------------------------------------------------- */
+ 304:mayo_core.c   ****     /* 1. Hash message                                                  */
+ 305:mayo_core.c   ****     /* -------------------------------------------------------------- */
+ 306:mayo_core.c   ****     shake256_multi(msg, msg_len,
+ 781              		.loc 1 306 5 view .LVU191
+ 782 0002 0024     		movs	r4, #0
+ 783 0004 1025     		movs	r5, #16
+ 280:mayo_core.c   ****     const uint8_t *seedsk = g_mayo_esk + MAYO_ESK_SEEDSK_OFF;
+ 784              		.loc 1 280 1 view .LVU192
+ 785 0006 D3B0     		sub	sp, sp, #332
+ 786              	.LCFI8:
+ 787              		.cfi_def_cfa_offset 352
+ 788              	.LVL74:
+ 296:mayo_core.c   **** 
+ 789              		.loc 1 296 5 is_stmt 1 view .LVU193
+ 298:mayo_core.c   ****     uint8_t decoded[16];
+ 790              		.loc 1 298 5 view .LVU194
+ 299:mayo_core.c   **** 
+ 791              		.loc 1 299 5 view .LVU195
+ 301:mayo_core.c   **** 
+ 792              		.loc 1 301 5 view .LVU196
+ 793              		.loc 1 306 5 view .LVU197
+ 794 0008 1BAE     		add	r6, sp, #108
+ 795 000a 2300     		movs	r3, r4
+ 280:mayo_core.c   ****     const uint8_t *seedsk = g_mayo_esk + MAYO_ESK_SEEDSK_OFF;
+ 796              		.loc 1 280 1 is_stmt 0 view .LVU198
+ 797 000c 0C92     		str	r2, [sp, #48]
+ 798              		.loc 1 306 5 view .LVU199
+ 799 000e 0595     		str	r5, [sp, #20]
+ 800 0010 2200     		movs	r2, r4
+ 801              	.LVL75:
+ 802              		.loc 1 306 5 view .LVU200
+ 803 0012 0496     		str	r6, [sp, #16]
+ 804 0014 0394     		str	r4, [sp, #12]
+ 805 0016 0294     		str	r4, [sp, #8]
+ 806 0018 0194     		str	r4, [sp, #4]
+ 807 001a 0094     		str	r4, [sp]
+ 808 001c FFF7FEFF 		bl	shake256_multi
+ 809              	.LVL76:
+ 810              	.LBB54:
+ 307:mayo_core.c   ****                    NULL, 0, NULL, 0, NULL, 0,
+ 308:mayo_core.c   ****                    M_digest, MAYO_DIGEST_B);
+ 309:mayo_core.c   **** 
+ 310:mayo_core.c   ****     /* -------------------------------------------------------------- */
+ 311:mayo_core.c   ****     /* 2. Derive salt                                                   */
+ 312:mayo_core.c   ****     /* -------------------------------------------------------------- */
+ 313:mayo_core.c   ****     {
+ 314:mayo_core.c   ****         static const uint8_t zeros[MAYO_SKSEED_B]; /* R = 0^{sk_seed_b} */
+ 811              		.loc 1 314 9 is_stmt 1 view .LVU201
+ 315:mayo_core.c   ****         shake256_multi(M_digest, MAYO_DIGEST_B,
+ 812              		.loc 1 315 9 view .LVU202
+ 813 0020 C94B     		ldr	r3, .L133
+ 814 0022 1FAF     		add	r7, sp, #124
+ 815 0024 2900     		movs	r1, r5
+ 816 0026 3000     		movs	r0, r6
+ 817 0028 C84A     		ldr	r2, .L133+4
+ 818 002a 0093     		str	r3, [sp]
+ 819 002c 0595     		str	r5, [sp, #20]
+ 820 002e 2B00     		movs	r3, r5
+ 821 0030 0497     		str	r7, [sp, #16]
+ 822 0032 0394     		str	r4, [sp, #12]
+ 823 0034 0294     		str	r4, [sp, #8]
+ 824 0036 0195     		str	r5, [sp, #4]
+ 825 0038 FFF7FEFF 		bl	shake256_multi
+ 826              	.LVL77:
+ 827              	.LBE54:
+ 316:mayo_core.c   ****                        zeros,    MAYO_SKSEED_B,
+ 317:mayo_core.c   ****                        seedsk,   MAYO_SKSEED_B,
+ 318:mayo_core.c   ****                        NULL, 0,
+ 319:mayo_core.c   ****                        salt, MAYO_SALT_B);
+ 320:mayo_core.c   ****     }
+ 321:mayo_core.c   **** 
+ 322:mayo_core.c   ****     /* -------------------------------------------------------------- */
+ 323:mayo_core.c   ****     /* 3. Derive target t                                               */
+ 324:mayo_core.c   ****     /* -------------------------------------------------------------- */
+ 325:mayo_core.c   ****     shake256_multi(M_digest, MAYO_DIGEST_B,
+ 828              		.loc 1 325 5 view .LVU203
+ 829 003c 0823     		movs	r3, #8
+ 830 003e 0593     		str	r3, [sp, #20]
+ 831 0040 12AB     		add	r3, sp, #72
+ 832 0042 0493     		str	r3, [sp, #16]
+ 833 0044 3A00     		movs	r2, r7
+ 834 0046 2B00     		movs	r3, r5
+ 835 0048 2900     		movs	r1, r5
+ 836 004a 3000     		movs	r0, r6
+ 837 004c 0394     		str	r4, [sp, #12]
+ 838 004e 0294     		str	r4, [sp, #8]
+ 839 0050 0194     		str	r4, [sp, #4]
+ 840 0052 0094     		str	r4, [sp]
+ 841 0054 FFF7FEFF 		bl	shake256_multi
+ 842              	.LVL78:
+ 326:mayo_core.c   ****                    salt,     MAYO_SALT_B,
+ 327:mayo_core.c   ****                    NULL, 0, NULL, 0,
+ 328:mayo_core.c   ****                    t, (MAYO_M + 1) / 2);
+ 329:mayo_core.c   **** 
+ 330:mayo_core.c   ****     /* -------------------------------------------------------------- */
+ 331:mayo_core.c   ****     /* Signing loop (ctr = 0..255)                                     */
+ 332:mayo_core.c   ****     /* -------------------------------------------------------------- */
+ 333:mayo_core.c   ****     for (ctr = 0; ctr <= 255; ctr++) {
+ 843              		.loc 1 333 5 view .LVU204
+ 844              		.loc 1 333 23 discriminator 1 view .LVU205
+ 845              		.loc 1 333 14 is_stmt 0 view .LVU206
+ 846 0058 0894     		str	r4, [sp, #32]
+ 847              	.LVL79:
+ 848              	.L92:
+ 849              	.LBB55:
+ 334:mayo_core.c   ****         uint8_t ctr_byte = (uint8_t)ctr;
+ 850              		.loc 1 334 9 is_stmt 1 view .LVU207
+ 851              		.loc 1 334 17 is_stmt 0 view .LVU208
+ 852 005a 1F23     		movs	r3, #31
+ 853 005c 0AAA     		add	r2, sp, #40
+ 854 005e 9B18     		adds	r3, r3, r2
+ 855 0060 089A     		ldr	r2, [sp, #32]
+ 335:mayo_core.c   **** 
+ 336:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 337:mayo_core.c   ****         /* 4. Derive vinegar vectors and randomness r                  */
+ 338:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 339:mayo_core.c   ****         shake256_multi(M_digest, MAYO_DIGEST_B,
+ 856              		.loc 1 339 9 view .LVU209
+ 857 0062 1021     		movs	r1, #16
+ 334:mayo_core.c   ****         uint8_t ctr_byte = (uint8_t)ctr;
+ 858              		.loc 1 334 17 view .LVU210
+ 859 0064 1A70     		strb	r2, [r3]
+ 860              		.loc 1 339 9 is_stmt 1 view .LVU211
+ 861 0066 3222     		movs	r2, #50
+ 862 0068 0592     		str	r2, [sp, #20]
+ 863 006a 27AA     		add	r2, sp, #156
+ 864 006c 0492     		str	r2, [sp, #16]
+ 865 006e 0122     		movs	r2, #1
+ 866 0070 0293     		str	r3, [sp, #8]
+ 867 0072 B54B     		ldr	r3, .L133
+ 868 0074 0392     		str	r2, [sp, #12]
+ 869 0076 0093     		str	r3, [sp]
+ 870 0078 0191     		str	r1, [sp, #4]
+ 871 007a 0B00     		movs	r3, r1
+ 872 007c 1FAA     		add	r2, sp, #124
+ 873 007e 1BA8     		add	r0, sp, #108
+ 874 0080 FFF7FEFF 		bl	shake256_multi
+ 875              	.LVL80:
+ 340:mayo_core.c   ****                        salt,     MAYO_SALT_B,
+ 341:mayo_core.c   ****                        seedsk,   MAYO_SKSEED_B,
+ 342:mayo_core.c   ****                        &ctr_byte, 1,
+ 343:mayo_core.c   ****                        V_buf, sizeof(V_buf));
+ 344:mayo_core.c   **** 
+ 345:mayo_core.c   ****         /* Decode nibble-packed vi vectors (already nibble-packed)     */
+ 346:mayo_core.c   ****         /* V_buf[i*V_B .. (i+1)*V_B - 1] = nibble-packed vi           */
+ 347:mayo_core.c   **** 
+ 348:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 349:mayo_core.c   ****         /* 5. Compute all Mi  (from L and vi)                         */
+ 350:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 351:mayo_core.c   ****         for (i = 0; i < MAYO_K; i++) {
+ 876              		.loc 1 351 9 view .LVU212
+ 877              		.loc 1 351 23 discriminator 1 view .LVU213
+ 878              		.loc 1 351 16 is_stmt 0 view .LVU214
+ 879 0084 0025     		movs	r5, #0
+ 880              	.LVL81:
+ 881              	.L47:
+ 352:mayo_core.c   ****             compute_Mi(g_Mi[i],
+ 882              		.loc 1 352 13 is_stmt 1 view .LVU215
+ 883 0086 B24B     		ldr	r3, .L133+8
+ 884              	.LBB56:
+ 885              	.LBB57:
+ 121:mayo_core.c   ****     for (r = 0; r < MAYO_V; r++) {
+ 886              		.loc 1 121 5 is_stmt 0 view .LVU216
+ 887 0088 0021     		movs	r1, #0
+ 888 008a 0B93     		str	r3, [sp, #44]
+ 889              	.LBE57:
+ 890              	.LBE56:
+ 891              		.loc 1 352 28 view .LVU217
+ 892 008c 0B9A     		ldr	r2, [sp, #44]
+ 893 008e 6B01     		lsls	r3, r5, #5
+ 894 0090 9B18     		adds	r3, r3, r2
+ 895 0092 0993     		str	r3, [sp, #36]
+ 896              		.loc 1 352 13 view .LVU218
+ 897 0094 27AA     		add	r2, sp, #156
+ 898 0096 EB00     		lsls	r3, r5, #3
+ 899 0098 9B18     		adds	r3, r3, r2
+ 900              	.LBB63:
+ 901              	.LBB61:
+ 121:mayo_core.c   ****     for (r = 0; r < MAYO_V; r++) {
+ 902              		.loc 1 121 5 view .LVU219
+ 903 009a 0998     		ldr	r0, [sp, #36]
+ 904 009c 2022     		movs	r2, #32
+ 905              	.LBE61:
+ 906              	.LBE63:
+ 907              		.loc 1 352 13 view .LVU220
+ 908 009e 0D93     		str	r3, [sp, #52]
+ 909              	.LVL82:
+ 910              	.LBB64:
+ 911              	.LBI56:
+ 118:mayo_core.c   **** {
+ 912              		.loc 1 118 13 is_stmt 1 view .LVU221
+ 913              	.LBB62:
+ 120:mayo_core.c   ****     memset(Mi, 0, MAYO_M * MAYO_O / 2);
+ 914              		.loc 1 120 5 view .LVU222
+ 121:mayo_core.c   ****     for (r = 0; r < MAYO_V; r++) {
+ 915              		.loc 1 121 5 view .LVU223
+ 122:mayo_core.c   ****         uint8_t vr = nibble_get(vi, r);
+ 916              		.loc 1 122 12 is_stmt 0 view .LVU224
+ 917 00a0 0024     		movs	r4, #0
+ 121:mayo_core.c   ****     for (r = 0; r < MAYO_V; r++) {
+ 918              		.loc 1 121 5 view .LVU225
+ 919 00a2 FFF7FEFF 		bl	memset
+ 920              	.LVL83:
+ 122:mayo_core.c   ****         uint8_t vr = nibble_get(vi, r);
+ 921              		.loc 1 122 5 is_stmt 1 view .LVU226
+ 122:mayo_core.c   ****         uint8_t vr = nibble_get(vi, r);
+ 922              		.loc 1 122 19 discriminator 1 view .LVU227
+ 923              	.L46:
+ 924              	.LBB58:
+ 123:mayo_core.c   ****         if (vr == 0) continue;
+ 925              		.loc 1 123 9 view .LVU228
+ 123:mayo_core.c   ****         if (vr == 0) continue;
+ 926              		.loc 1 123 22 is_stmt 0 view .LVU229
+ 927 00a6 2100     		movs	r1, r4
+ 928 00a8 0D98     		ldr	r0, [sp, #52]
+ 929 00aa FFF7FEFF 		bl	nibble_get
+ 930              	.LVL84:
+ 931 00ae 0A90     		str	r0, [sp, #40]
+ 932              	.LVL85:
+ 124:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+ 933              		.loc 1 124 9 is_stmt 1 view .LVU230
+ 124:mayo_core.c   ****         for (d = 0; d < MAYO_O; d++) {
+ 934              		.loc 1 124 12 is_stmt 0 view .LVU231
+ 935 00b0 0028     		cmp	r0, #0
+ 936 00b2 20D0     		beq	.L43
+ 125:mayo_core.c   ****             for (eq = 0; eq < MAYO_M; eq++) {
+ 937              		.loc 1 125 16 view .LVU232
+ 938 00b4 0026     		movs	r6, #0
+ 939 00b6 A301     		lsls	r3, r4, #6
+ 940 00b8 0793     		str	r3, [sp, #28]
+ 941              	.L44:
+ 942              	.LVL86:
+ 126:mayo_core.c   ****                 uint8_t l_val = nibble_get(L, (r * MAYO_O + d) * MAYO_M + eq);
+ 943              		.loc 1 126 29 is_stmt 1 discriminator 1 view .LVU233
+ 944              	.LBE58:
+ 122:mayo_core.c   ****         uint8_t vr = nibble_get(vi, r);
+ 945              		.loc 1 122 12 is_stmt 0 view .LVU234
+ 946 00ba 3700     		movs	r7, r6
+ 947 00bc 079B     		ldr	r3, [sp, #28]
+ 948 00be 0693     		str	r3, [sp, #24]
+ 949              	.LVL87:
+ 950              	.L45:
+ 951              	.LBB60:
+ 952              	.LBB59:
+ 127:mayo_core.c   ****                 nibble_add(Mi, eq * MAYO_O + d, gf16_mul(vr, l_val));
+ 953              		.loc 1 127 17 is_stmt 1 view .LVU235
+ 127:mayo_core.c   ****                 nibble_add(Mi, eq * MAYO_O + d, gf16_mul(vr, l_val));
+ 954              		.loc 1 127 33 is_stmt 0 view .LVU236
+ 955 00c0 0699     		ldr	r1, [sp, #24]
+ 956 00c2 A448     		ldr	r0, .L133+12
+ 957              	.LVL88:
+ 127:mayo_core.c   ****                 nibble_add(Mi, eq * MAYO_O + d, gf16_mul(vr, l_val));
+ 958              		.loc 1 127 33 view .LVU237
+ 959 00c4 FFF7FEFF 		bl	nibble_get
+ 960              	.LVL89:
+ 127:mayo_core.c   ****                 nibble_add(Mi, eq * MAYO_O + d, gf16_mul(vr, l_val));
+ 961              		.loc 1 127 33 view .LVU238
+ 962 00c8 0100     		movs	r1, r0
+ 963              	.LVL90:
+ 128:mayo_core.c   ****             }
+ 964              		.loc 1 128 17 is_stmt 1 view .LVU239
+ 965 00ca 0A98     		ldr	r0, [sp, #40]
+ 966 00cc FFF7FEFF 		bl	gf16_mul
+ 967              	.LVL91:
+ 128:mayo_core.c   ****             }
+ 968              		.loc 1 128 17 is_stmt 0 discriminator 1 view .LVU240
+ 969 00d0 3900     		movs	r1, r7
+ 128:mayo_core.c   ****             }
+ 970              		.loc 1 128 17 view .LVU241
+ 971 00d2 0200     		movs	r2, r0
+ 128:mayo_core.c   ****             }
+ 972              		.loc 1 128 17 discriminator 1 view .LVU242
+ 973 00d4 0998     		ldr	r0, [sp, #36]
+ 974 00d6 FFF7FEFF 		bl	nibble_add
+ 975              	.LVL92:
+ 976              	.LBE59:
+ 126:mayo_core.c   ****                 uint8_t l_val = nibble_get(L, (r * MAYO_O + d) * MAYO_M + eq);
+ 977              		.loc 1 126 41 is_stmt 1 discriminator 3 view .LVU243
+ 126:mayo_core.c   ****                 uint8_t l_val = nibble_get(L, (r * MAYO_O + d) * MAYO_M + eq);
+ 978              		.loc 1 126 29 discriminator 1 view .LVU244
+ 979 00da 069B     		ldr	r3, [sp, #24]
+ 980 00dc 0437     		adds	r7, r7, #4
+ 981 00de 0133     		adds	r3, r3, #1
+ 982 00e0 0693     		str	r3, [sp, #24]
+ 983              	.LVL93:
+ 126:mayo_core.c   ****                 uint8_t l_val = nibble_get(L, (r * MAYO_O + d) * MAYO_M + eq);
+ 984              		.loc 1 126 29 is_stmt 0 discriminator 1 view .LVU245
+ 985 00e2 3300     		movs	r3, r6
+ 986              	.LVL94:
+ 126:mayo_core.c   ****                 uint8_t l_val = nibble_get(L, (r * MAYO_O + d) * MAYO_M + eq);
+ 987              		.loc 1 126 29 discriminator 1 view .LVU246
+ 988 00e4 4033     		adds	r3, r3, #64
+ 989 00e6 9F42     		cmp	r7, r3
+ 990 00e8 EAD1     		bne	.L45
+ 125:mayo_core.c   ****             for (eq = 0; eq < MAYO_M; eq++) {
+ 991              		.loc 1 125 34 is_stmt 1 discriminator 2 view .LVU247
+ 125:mayo_core.c   ****             for (eq = 0; eq < MAYO_M; eq++) {
+ 992              		.loc 1 125 23 is_stmt 0 discriminator 1 view .LVU248
+ 993 00ea 079B     		ldr	r3, [sp, #28]
+ 125:mayo_core.c   ****             for (eq = 0; eq < MAYO_M; eq++) {
+ 994              		.loc 1 125 34 discriminator 2 view .LVU249
+ 995 00ec 0136     		adds	r6, r6, #1
+ 996              	.LVL95:
+ 125:mayo_core.c   ****             for (eq = 0; eq < MAYO_M; eq++) {
+ 997              		.loc 1 125 23 is_stmt 1 discriminator 1 view .LVU250
+ 998 00ee 1033     		adds	r3, r3, #16
+ 999 00f0 0793     		str	r3, [sp, #28]
+ 1000 00f2 042E     		cmp	r6, #4
+ 1001 00f4 E1D1     		bne	.L44
+ 1002              	.LVL96:
+ 1003              	.L43:
+ 125:mayo_core.c   ****             for (eq = 0; eq < MAYO_M; eq++) {
+ 1004              		.loc 1 125 23 is_stmt 0 discriminator 1 view .LVU251
+ 1005              	.LBE60:
+ 122:mayo_core.c   ****         uint8_t vr = nibble_get(vi, r);
+ 1006              		.loc 1 122 30 is_stmt 1 discriminator 2 view .LVU252
+ 1007 00f6 0134     		adds	r4, r4, #1
+ 1008              	.LVL97:
+ 122:mayo_core.c   ****         uint8_t vr = nibble_get(vi, r);
+ 1009              		.loc 1 122 19 discriminator 1 view .LVU253
+ 1010 00f8 102C     		cmp	r4, #16
+ 1011 00fa D4D1     		bne	.L46
+ 1012              	.LVL98:
+ 122:mayo_core.c   ****         uint8_t vr = nibble_get(vi, r);
+ 1013              		.loc 1 122 19 is_stmt 0 discriminator 1 view .LVU254
+ 1014              	.LBE62:
+ 1015              	.LBE64:
+ 351:mayo_core.c   ****             compute_Mi(g_Mi[i],
+ 1016              		.loc 1 351 34 is_stmt 1 discriminator 3 view .LVU255
+ 1017 00fc 0135     		adds	r5, r5, #1
+ 1018              	.LVL99:
+ 351:mayo_core.c   ****             compute_Mi(g_Mi[i],
+ 1019              		.loc 1 351 23 discriminator 1 view .LVU256
+ 1020 00fe 052D     		cmp	r5, #5
+ 1021 0100 C1D1     		bne	.L47
+ 353:mayo_core.c   ****                        V_buf + i * MAYO_V_B,
+ 354:mayo_core.c   ****                        L);
+ 355:mayo_core.c   ****         }
+ 356:mayo_core.c   **** 
+ 357:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 358:mayo_core.c   ****         /* 6. Single-pass P1 stream: compute u_all[ell] for all pairs */
+ 359:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 360:mayo_core.c   ****         memset(u_all, 0, sizeof(u_all));
+ 1022              		.loc 1 360 9 view .LVU257
+ 1023 0102 7822     		movs	r2, #120
+ 1024 0104 0021     		movs	r1, #0
+ 1025 0106 34A8     		add	r0, sp, #208
+ 1026 0108 FFF7FEFF 		bl	memset
+ 1027              	.LVL100:
+ 361:mayo_core.c   **** 
+ 362:mayo_core.c   ****         /* Re-init SHAKE256 with seedpk for P1 stream */
+ 363:mayo_core.c   ****         shake256_init(&g_shake);
+ 1028              		.loc 1 363 9 view .LVU258
+ 1029 010c 924D     		ldr	r5, .L133+16
+ 1030              	.LVL101:
+ 1031              	.LBB65:
+ 364:mayo_core.c   ****         shake256_absorb(&g_shake, g_mayo_esk + MAYO_ESK_SEEDPK_OFF, MAYO_PKSEED_B);
+ 365:mayo_core.c   ****         shake256_finalize(&g_shake);
+ 366:mayo_core.c   **** 
+ 367:mayo_core.c   ****         {
+ 368:mayo_core.c   ****             int r_idx, s_idx;
+ 369:mayo_core.c   ****             for (r_idx = 0; r_idx < MAYO_V; r_idx++) {
+ 1032              		.loc 1 369 24 is_stmt 0 view .LVU259
+ 1033 010e 0027     		movs	r7, #0
+ 1034              	.LBE65:
+ 363:mayo_core.c   ****         shake256_absorb(&g_shake, g_mayo_esk + MAYO_ESK_SEEDPK_OFF, MAYO_PKSEED_B);
+ 1035              		.loc 1 363 9 view .LVU260
+ 1036 0110 2800     		movs	r0, r5
+ 1037 0112 FFF7FEFF 		bl	shake256_init
+ 1038              	.LVL102:
+ 364:mayo_core.c   ****         shake256_absorb(&g_shake, g_mayo_esk + MAYO_ESK_SEEDPK_OFF, MAYO_PKSEED_B);
+ 1039              		.loc 1 364 9 is_stmt 1 view .LVU261
+ 1040 0116 2200     		movs	r2, r4
+ 1041 0118 2800     		movs	r0, r5
+ 1042 011a 9049     		ldr	r1, .L133+20
+ 1043 011c FFF7FEFF 		bl	shake256_absorb
+ 1044              	.LVL103:
+ 365:mayo_core.c   **** 
+ 1045              		.loc 1 365 9 view .LVU262
+ 1046 0120 2800     		movs	r0, r5
+ 1047 0122 FFF7FEFF 		bl	shake256_finalize
+ 1048              	.LVL104:
+ 1049              	.LBB69:
+ 368:mayo_core.c   ****             for (r_idx = 0; r_idx < MAYO_V; r_idx++) {
+ 1050              		.loc 1 368 13 view .LVU263
+ 1051              		.loc 1 369 13 view .LVU264
+ 1052              		.loc 1 369 35 discriminator 1 view .LVU265
+ 1053              	.L48:
+ 370:mayo_core.c   ****                 for (s_idx = r_idx; s_idx < MAYO_V; s_idx++) {
+ 1054              		.loc 1 370 43 discriminator 1 view .LVU266
+ 1055              		.loc 1 370 28 is_stmt 0 view .LVU267
+ 1056 0126 0697     		str	r7, [sp, #24]
+ 1057              	.LVL105:
+ 1058              	.L58:
+ 371:mayo_core.c   ****                     shake256_squeeze(&g_shake, bs8, 8);
+ 1059              		.loc 1 371 21 is_stmt 1 view .LVU268
+ 1060 0128 0822     		movs	r2, #8
+ 1061 012a 8B48     		ldr	r0, .L133+16
+ 1062 012c 16A9     		add	r1, sp, #88
+ 1063 012e FFF7FEFF 		bl	shake256_squeeze
+ 1064              	.LVL106:
+ 372:mayo_core.c   **** 
+ 373:mayo_core.c   ****                     /* Skip diagonal (cancelled in P1+P1^T anyway) */
+ 374:mayo_core.c   ****                     if (r_idx == s_idx) continue;
+ 1065              		.loc 1 374 21 view .LVU269
+ 1066              		.loc 1 374 24 is_stmt 0 view .LVU270
+ 1067 0132 069B     		ldr	r3, [sp, #24]
+ 1068 0134 9F42     		cmp	r7, r3
+ 1069 0136 3CD0     		beq	.L49
+ 375:mayo_core.c   **** 
+ 376:mayo_core.c   ****                     decode_bs8(bs8, decoded); /* decoded[a] = P1_a[r,s] */
+ 1070              		.loc 1 376 21 is_stmt 1 view .LVU271
+ 1071 0138 23A9     		add	r1, sp, #140
+ 1072 013a 16A8     		add	r0, sp, #88
+ 1073 013c FFF7FEFF 		bl	decode_bs8
+ 1074              	.LVL107:
+ 377:mayo_core.c   **** 
+ 378:mayo_core.c   ****                     ell = 0;
+ 1075              		.loc 1 378 21 view .LVU272
+ 379:mayo_core.c   ****                     for (i = 0; i < MAYO_K; i++) {
+ 1076              		.loc 1 379 21 view .LVU273
+ 1077              		.loc 1 379 35 discriminator 1 view .LVU274
+ 378:mayo_core.c   ****                     for (i = 0; i < MAYO_K; i++) {
+ 1078              		.loc 1 378 25 is_stmt 0 view .LVU275
+ 1079 0140 0023     		movs	r3, #0
+ 1080              		.loc 1 379 28 view .LVU276
+ 1081 0142 1E00     		movs	r6, r3
+ 378:mayo_core.c   ****                     for (i = 0; i < MAYO_K; i++) {
+ 1082              		.loc 1 378 25 view .LVU277
+ 1083 0144 0993     		str	r3, [sp, #36]
+ 1084              	.LVL108:
+ 1085              	.L50:
+ 380:mayo_core.c   ****                         for (j = MAYO_K - 1; j >= i; j--) {
+ 1086              		.loc 1 380 48 is_stmt 1 discriminator 1 view .LVU278
+ 1087              	.LBB66:
+ 381:mayo_core.c   ****                             /* coeff = vi[r]*vj[s] + vj[r]*vi[s]  */
+ 382:mayo_core.c   ****                             uint8_t vir = nibble_get(V_buf + i * MAYO_V_B, r_idx);
+ 1088              		.loc 1 382 43 is_stmt 0 view .LVU279
+ 1089 0146 27AA     		add	r2, sp, #156
+ 1090 0148 F300     		lsls	r3, r6, #3
+ 1091 014a 9B18     		adds	r3, r3, r2
+ 1092 014c 0D93     		str	r3, [sp, #52]
+ 1093 014e 099B     		ldr	r3, [sp, #36]
+ 1094 0150 34AA     		add	r2, sp, #208
+ 1095 0152 DB00     		lsls	r3, r3, #3
+ 1096 0154 D318     		adds	r3, r2, r3
+ 1097 0156 0A93     		str	r3, [sp, #40]
+ 1098              	.LBE66:
+ 380:mayo_core.c   ****                         for (j = MAYO_K - 1; j >= i; j--) {
+ 1099              		.loc 1 380 32 view .LVU280
+ 1100 0158 0423     		movs	r3, #4
+ 1101 015a 0793     		str	r3, [sp, #28]
+ 1102              	.LVL109:
+ 1103              	.L54:
+ 1104              	.LBB67:
+ 1105              		.loc 1 382 29 is_stmt 1 view .LVU281
+ 1106              		.loc 1 382 43 is_stmt 0 view .LVU282
+ 1107 015c 3900     		movs	r1, r7
+ 1108 015e 0D98     		ldr	r0, [sp, #52]
+ 1109 0160 FFF7FEFF 		bl	nibble_get
+ 1110              	.LVL110:
+ 383:mayo_core.c   ****                             uint8_t vis = nibble_get(V_buf + i * MAYO_V_B, s_idx);
+ 1111              		.loc 1 383 43 view .LVU283
+ 1112 0164 0699     		ldr	r1, [sp, #24]
+ 382:mayo_core.c   ****                             uint8_t vis = nibble_get(V_buf + i * MAYO_V_B, s_idx);
+ 1113              		.loc 1 382 43 view .LVU284
+ 1114 0166 0500     		movs	r5, r0
+ 1115              	.LVL111:
+ 1116              		.loc 1 383 29 is_stmt 1 view .LVU285
+ 1117              		.loc 1 383 43 is_stmt 0 view .LVU286
+ 1118 0168 0D98     		ldr	r0, [sp, #52]
+ 1119 016a FFF7FEFF 		bl	nibble_get
+ 1120              	.LVL112:
+ 384:mayo_core.c   ****                             uint8_t vjr = nibble_get(V_buf + j * MAYO_V_B, r_idx);
+ 1121              		.loc 1 384 43 view .LVU287
+ 1122 016e 079B     		ldr	r3, [sp, #28]
+ 1123 0170 27AA     		add	r2, sp, #156
+ 1124 0172 DB00     		lsls	r3, r3, #3
+ 1125 0174 9B18     		adds	r3, r3, r2
+ 1126 0176 0E93     		str	r3, [sp, #56]
+ 385:mayo_core.c   ****                             uint8_t vjs = nibble_get(V_buf + j * MAYO_V_B, s_idx);
+ 386:mayo_core.c   ****                             uint8_t coeff;
+ 387:mayo_core.c   ****                             if (i == j) {
+ 1127              		.loc 1 387 32 view .LVU288
+ 1128 0178 079B     		ldr	r3, [sp, #28]
+ 383:mayo_core.c   ****                             uint8_t vjr = nibble_get(V_buf + j * MAYO_V_B, r_idx);
+ 1129              		.loc 1 383 43 view .LVU289
+ 1130 017a 0400     		movs	r4, r0
+ 1131              	.LVL113:
+ 384:mayo_core.c   ****                             uint8_t vjr = nibble_get(V_buf + j * MAYO_V_B, r_idx);
+ 1132              		.loc 1 384 29 is_stmt 1 view .LVU290
+ 385:mayo_core.c   ****                             uint8_t vjs = nibble_get(V_buf + j * MAYO_V_B, s_idx);
+ 1133              		.loc 1 385 29 view .LVU291
+ 386:mayo_core.c   ****                             if (i == j) {
+ 1134              		.loc 1 386 29 view .LVU292
+ 1135              		.loc 1 387 29 view .LVU293
+ 1136              		.loc 1 387 32 is_stmt 0 view .LVU294
+ 1137 017c 9E42     		cmp	r6, r3
+ 1138 017e 00D0     		beq	.LCB1086
+ 1139 0180 BEE0     		b	.L51	@long jump
+ 1140              	.LCB1086:
+ 388:mayo_core.c   ****                                 coeff = gf16_mul(vir, vis); /* vi[r]*vi[s] */
+ 1141              		.loc 1 388 33 is_stmt 1 view .LVU295
+ 1142              		.loc 1 388 41 is_stmt 0 view .LVU296
+ 1143 0182 0100     		movs	r1, r0
+ 1144 0184 2800     		movs	r0, r5
+ 1145              	.LVL114:
+ 1146              		.loc 1 388 41 view .LVU297
+ 1147 0186 FFF7FEFF 		bl	gf16_mul
+ 1148              	.LVL115:
+ 1149 018a 0500     		movs	r5, r0
+ 1150              	.LVL116:
+ 1151              	.L52:
+ 389:mayo_core.c   ****                             } else {
+ 390:mayo_core.c   ****                                 coeff = gf16_mul(vir, vjs) ^ gf16_mul(vjr, vis);
+ 391:mayo_core.c   ****                             }
+ 392:mayo_core.c   ****                             if (coeff != 0) {
+ 1152              		.loc 1 392 29 is_stmt 1 view .LVU298
+ 1153              		.loc 1 392 32 is_stmt 0 view .LVU299
+ 1154 018c 002D     		cmp	r5, #0
+ 1155 018e 00D0     		beq	.LCB1102
+ 1156 0190 CBE0     		b	.L53	@long jump
+ 1157              	.LCB1102:
+ 1158              	.L57:
+ 393:mayo_core.c   ****                                 for (a = 0; a < MAYO_M; a++) {
+ 394:mayo_core.c   ****                                     nibble_add(u_all[ell], a,
+ 395:mayo_core.c   ****                                                gf16_mul(coeff, decoded[a]));
+ 396:mayo_core.c   ****                                 }
+ 397:mayo_core.c   ****                             }
+ 398:mayo_core.c   ****                             ell++;
+ 1159              		.loc 1 398 29 is_stmt 1 view .LVU300
+ 1160              		.loc 1 398 29 is_stmt 0 view .LVU301
+ 1161              	.LBE67:
+ 380:mayo_core.c   ****                             /* coeff = vi[r]*vj[s] + vj[r]*vi[s]  */
+ 1162              		.loc 1 380 55 is_stmt 1 discriminator 2 view .LVU302
+ 1163              	.LVL117:
+ 380:mayo_core.c   ****                             /* coeff = vi[r]*vj[s] + vj[r]*vi[s]  */
+ 1164              		.loc 1 380 55 is_stmt 0 discriminator 2 view .LVU303
+ 1165 0192 079B     		ldr	r3, [sp, #28]
+ 1166 0194 013B     		subs	r3, r3, #1
+ 1167              	.LVL118:
+ 380:mayo_core.c   ****                             /* coeff = vi[r]*vj[s] + vj[r]*vi[s]  */
+ 1168              		.loc 1 380 55 discriminator 2 view .LVU304
+ 1169 0196 0793     		str	r3, [sp, #28]
+ 380:mayo_core.c   ****                             /* coeff = vi[r]*vj[s] + vj[r]*vi[s]  */
+ 1170              		.loc 1 380 48 is_stmt 1 discriminator 1 view .LVU305
+ 1171 0198 0A9B     		ldr	r3, [sp, #40]
+ 1172              	.LVL119:
+ 380:mayo_core.c   ****                             /* coeff = vi[r]*vj[s] + vj[r]*vi[s]  */
+ 1173              		.loc 1 380 48 is_stmt 0 discriminator 1 view .LVU306
+ 1174 019a 0833     		adds	r3, r3, #8
+ 1175 019c 0A93     		str	r3, [sp, #40]
+ 1176 019e 079B     		ldr	r3, [sp, #28]
+ 1177 01a0 B342     		cmp	r3, r6
+ 1178 01a2 DBDA     		bge	.L54
+ 380:mayo_core.c   ****                             /* coeff = vi[r]*vj[s] + vj[r]*vi[s]  */
+ 1179              		.loc 1 380 48 discriminator 1 view .LVU307
+ 1180 01a4 099B     		ldr	r3, [sp, #36]
+ 1181 01a6 0533     		adds	r3, r3, #5
+ 1182              	.LVL120:
+ 380:mayo_core.c   ****                             /* coeff = vi[r]*vj[s] + vj[r]*vi[s]  */
+ 1183              		.loc 1 380 48 discriminator 1 view .LVU308
+ 1184 01a8 9B1B     		subs	r3, r3, r6
+ 1185              	.LVL121:
+ 379:mayo_core.c   ****                         for (j = MAYO_K - 1; j >= i; j--) {
+ 1186              		.loc 1 379 46 discriminator 2 view .LVU309
+ 1187 01aa 0136     		adds	r6, r6, #1
+ 1188              	.LVL122:
+ 379:mayo_core.c   ****                         for (j = MAYO_K - 1; j >= i; j--) {
+ 1189              		.loc 1 379 46 discriminator 2 view .LVU310
+ 1190 01ac 0993     		str	r3, [sp, #36]
+ 1191              	.LVL123:
+ 379:mayo_core.c   ****                         for (j = MAYO_K - 1; j >= i; j--) {
+ 1192              		.loc 1 379 46 is_stmt 1 discriminator 2 view .LVU311
+ 379:mayo_core.c   ****                         for (j = MAYO_K - 1; j >= i; j--) {
+ 1193              		.loc 1 379 35 discriminator 1 view .LVU312
+ 1194 01ae 052E     		cmp	r6, #5
+ 1195 01b0 C9D1     		bne	.L50
+ 1196              	.LVL124:
+ 1197              	.L49:
+ 370:mayo_core.c   ****                     shake256_squeeze(&g_shake, bs8, 8);
+ 1198              		.loc 1 370 58 discriminator 2 view .LVU313
+ 1199 01b2 069B     		ldr	r3, [sp, #24]
+ 1200 01b4 0133     		adds	r3, r3, #1
+ 1201 01b6 0693     		str	r3, [sp, #24]
+ 1202              	.LVL125:
+ 370:mayo_core.c   ****                     shake256_squeeze(&g_shake, bs8, 8);
+ 1203              		.loc 1 370 43 discriminator 1 view .LVU314
+ 1204 01b8 102B     		cmp	r3, #16
+ 1205 01ba B5D1     		bne	.L58
+ 369:mayo_core.c   ****                 for (s_idx = r_idx; s_idx < MAYO_V; s_idx++) {
+ 1206              		.loc 1 369 50 discriminator 2 view .LVU315
+ 1207 01bc 0137     		adds	r7, r7, #1
+ 1208              	.LVL126:
+ 369:mayo_core.c   ****                 for (s_idx = r_idx; s_idx < MAYO_V; s_idx++) {
+ 1209              		.loc 1 369 35 discriminator 1 view .LVU316
+ 1210 01be 102F     		cmp	r7, #16
+ 1211 01c0 B1D1     		bne	.L48
+ 1212              	.LBE69:
+ 399:mayo_core.c   ****                         }
+ 400:mayo_core.c   ****                     }
+ 401:mayo_core.c   ****                 }
+ 402:mayo_core.c   ****             }
+ 403:mayo_core.c   ****         }
+ 404:mayo_core.c   ****         /* Consume the rest of P1 stream (diagonal positions) without
+ 405:mayo_core.c   ****          * using them — keeps AES counter in sync if needed.
+ 406:mayo_core.c   ****          * (For diagonal r=s we already called aes_ctr_read8 above.)  */
+ 407:mayo_core.c   **** 
+ 408:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 409:mayo_core.c   ****         /* 7. Build A and y                                            */
+ 410:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 411:mayo_core.c   ****         memset(g_A, 0, sizeof(g_A));
+ 1213              		.loc 1 411 9 view .LVU317
+ 1214 01c2 A022     		movs	r2, #160
+ 1215 01c4 0021     		movs	r1, #0
+ 1216 01c6 6648     		ldr	r0, .L133+24
+ 1217 01c8 FFF7FEFF 		bl	memset
+ 1218              	.LVL127:
+ 412:mayo_core.c   ****         memcpy(y, t, sizeof(t));
+ 1219              		.loc 1 412 9 view .LVU318
+ 1220 01cc 0822     		movs	r2, #8
+ 1221 01ce 12A9     		add	r1, sp, #72
+ 1222 01d0 14A8     		add	r0, sp, #80
+ 1223 01d2 FFF7FEFF 		bl	memcpy
+ 1224              	.LVL128:
+ 413:mayo_core.c   **** 
+ 414:mayo_core.c   ****         ell = 0;
+ 1225              		.loc 1 414 9 view .LVU319
+ 415:mayo_core.c   ****         for (i = 0; i < MAYO_K; i++) {
+ 1226              		.loc 1 415 9 view .LVU320
+ 1227              		.loc 1 415 23 discriminator 1 view .LVU321
+ 414:mayo_core.c   ****         for (i = 0; i < MAYO_K; i++) {
+ 1228              		.loc 1 414 13 is_stmt 0 view .LVU322
+ 1229 01d6 0023     		movs	r3, #0
+ 1230              		.loc 1 415 16 view .LVU323
+ 1231 01d8 1C00     		movs	r4, r3
+ 414:mayo_core.c   ****         for (i = 0; i < MAYO_K; i++) {
+ 1232              		.loc 1 414 13 view .LVU324
+ 1233 01da 0693     		str	r3, [sp, #24]
+ 1234              	.LVL129:
+ 1235              	.LBB70:
+ 1236              	.LBB71:
+ 1237              	.LBB72:
+ 142:mayo_core.c   ****         nibble_add(y, eq, nibble_get(u, src));
+ 1238              		.loc 1 142 29 view .LVU325
+ 1239 01dc 0A97     		str	r7, [sp, #40]
+ 1240              	.LVL130:
+ 1241              	.L60:
+ 142:mayo_core.c   ****         nibble_add(y, eq, nibble_get(u, src));
+ 1242              		.loc 1 142 29 view .LVU326
+ 1243              	.LBE72:
+ 1244              	.LBE71:
+ 1245              	.LBE70:
+ 416:mayo_core.c   ****             for (j = MAYO_K - 1; j >= i; j--) {
+ 1246              		.loc 1 416 36 is_stmt 1 discriminator 1 view .LVU327
+ 1247              		.loc 1 416 20 is_stmt 0 view .LVU328
+ 1248 01de 0425     		movs	r5, #4
+ 417:mayo_core.c   ****                 /* y -= E^ell * u_all[ell] */
+ 418:mayo_core.c   ****                 subtract_El_u(y, u_all[ell], ell);
+ 419:mayo_core.c   **** 
+ 420:mayo_core.c   ****                 /* A[:,i*O:(i+1)*O] += E^ell * Mj */
+ 421:mayo_core.c   ****                 add_El_M_to_A(g_A, g_Mi[j], i, ell);
+ 422:mayo_core.c   **** 
+ 423:mayo_core.c   ****                 if (i != j) {
+ 424:mayo_core.c   ****                     /* A[:,j*O:(j+1)*O] += E^ell * Mi */
+ 425:mayo_core.c   ****                     add_El_M_to_A(g_A, g_Mi[i], j, ell);
+ 1249              		.loc 1 425 44 view .LVU329
+ 1250 01e0 0B9A     		ldr	r2, [sp, #44]
+ 1251 01e2 6301     		lsls	r3, r4, #5
+ 1252 01e4 9B18     		adds	r3, r3, r2
+ 1253 01e6 069E     		ldr	r6, [sp, #24]
+ 1254 01e8 0993     		str	r3, [sp, #36]
+ 1255              	.LVL131:
+ 1256              	.L64:
+ 418:mayo_core.c   **** 
+ 1257              		.loc 1 418 17 is_stmt 1 view .LVU330
+ 1258              	.LBB77:
+ 1259              	.LBB75:
+ 141:mayo_core.c   ****         int src = (eq - ell + MAYO_M) % MAYO_M;
+ 1260              		.loc 1 141 13 is_stmt 0 view .LVU331
+ 1261 01ea 0027     		movs	r7, #0
+ 1262              	.LBE75:
+ 1263              	.LBE77:
+ 418:mayo_core.c   **** 
+ 1264              		.loc 1 418 39 view .LVU332
+ 1265 01ec F300     		lsls	r3, r6, #3
+ 1266 01ee 34AA     		add	r2, sp, #208
+ 1267 01f0 9B18     		adds	r3, r3, r2
+ 1268 01f2 0793     		str	r3, [sp, #28]
+ 1269              	.LVL132:
+ 1270              	.LBB78:
+ 1271              	.LBI70:
+ 138:mayo_core.c   **** {
+ 1272              		.loc 1 138 13 is_stmt 1 view .LVU333
+ 1273              	.LBB76:
+ 140:mayo_core.c   ****     for (eq = 0; eq < MAYO_M; eq++) {
+ 1274              		.loc 1 140 5 view .LVU334
+ 141:mayo_core.c   ****         int src = (eq - ell + MAYO_M) % MAYO_M;
+ 1275              		.loc 1 141 5 view .LVU335
+ 141:mayo_core.c   ****         int src = (eq - ell + MAYO_M) % MAYO_M;
+ 1276              		.loc 1 141 21 discriminator 1 view .LVU336
+ 1277              	.LBB73:
+ 142:mayo_core.c   ****         nibble_add(y, eq, nibble_get(u, src));
+ 1278              		.loc 1 142 29 is_stmt 0 view .LVU337
+ 1279 01f4 0A9B     		ldr	r3, [sp, #40]
+ 1280              	.LVL133:
+ 142:mayo_core.c   ****         nibble_add(y, eq, nibble_get(u, src));
+ 1281              		.loc 1 142 29 view .LVU338
+ 1282 01f6 9B1B     		subs	r3, r3, r6
+ 1283 01f8 0D93     		str	r3, [sp, #52]
+ 1284              	.LVL134:
+ 1285              	.L62:
+ 142:mayo_core.c   ****         nibble_add(y, eq, nibble_get(u, src));
+ 1286              		.loc 1 142 9 is_stmt 1 view .LVU339
+ 143:mayo_core.c   ****     }
+ 1287              		.loc 1 143 9 view .LVU340
+ 142:mayo_core.c   ****         nibble_add(y, eq, nibble_get(u, src));
+ 1288              		.loc 1 142 29 is_stmt 0 view .LVU341
+ 1289 01fa 0D9B     		ldr	r3, [sp, #52]
+ 1290 01fc D919     		adds	r1, r3, r7
+ 142:mayo_core.c   ****         nibble_add(y, eq, nibble_get(u, src));
+ 1291              		.loc 1 142 13 view .LVU342
+ 1292 01fe 594B     		ldr	r3, .L133+28
+ 1293 0200 1940     		ands	r1, r3
+ 1294 0202 04D5     		bpl	.L61
+ 1295 0204 1023     		movs	r3, #16
+ 1296 0206 0139     		subs	r1, r1, #1
+ 1297 0208 5B42     		rsbs	r3, r3, #0
+ 1298 020a 1943     		orrs	r1, r3
+ 1299 020c 0131     		adds	r1, r1, #1
+ 1300              	.L61:
+ 143:mayo_core.c   ****     }
+ 1301              		.loc 1 143 9 view .LVU343
+ 1302 020e 0798     		ldr	r0, [sp, #28]
+ 1303 0210 FFF7FEFF 		bl	nibble_get
+ 1304              	.LVL135:
+ 143:mayo_core.c   ****     }
+ 1305              		.loc 1 143 9 discriminator 1 view .LVU344
+ 1306 0214 3900     		movs	r1, r7
+ 143:mayo_core.c   ****     }
+ 1307              		.loc 1 143 9 view .LVU345
+ 1308 0216 0200     		movs	r2, r0
+ 1309              	.LBE73:
+ 141:mayo_core.c   ****         int src = (eq - ell + MAYO_M) % MAYO_M;
+ 1310              		.loc 1 141 33 discriminator 3 view .LVU346
+ 1311 0218 0137     		adds	r7, r7, #1
+ 1312              	.LVL136:
+ 1313              	.LBB74:
+ 143:mayo_core.c   ****     }
+ 1314              		.loc 1 143 9 discriminator 1 view .LVU347
+ 1315 021a 14A8     		add	r0, sp, #80
+ 1316              	.LVL137:
+ 143:mayo_core.c   ****     }
+ 1317              		.loc 1 143 9 discriminator 1 view .LVU348
+ 1318 021c FFF7FEFF 		bl	nibble_add
+ 1319              	.LVL138:
+ 143:mayo_core.c   ****     }
+ 1320              		.loc 1 143 9 discriminator 1 view .LVU349
+ 1321              	.LBE74:
+ 141:mayo_core.c   ****         int src = (eq - ell + MAYO_M) % MAYO_M;
+ 1322              		.loc 1 141 33 is_stmt 1 discriminator 3 view .LVU350
+ 141:mayo_core.c   ****         int src = (eq - ell + MAYO_M) % MAYO_M;
+ 1323              		.loc 1 141 21 discriminator 1 view .LVU351
+ 1324 0220 102F     		cmp	r7, #16
+ 1325 0222 EAD1     		bne	.L62
+ 1326              	.LVL139:
+ 141:mayo_core.c   ****         int src = (eq - ell + MAYO_M) % MAYO_M;
+ 1327              		.loc 1 141 21 is_stmt 0 discriminator 1 view .LVU352
+ 1328              	.LBE76:
+ 1329              	.LBE78:
+ 421:mayo_core.c   **** 
+ 1330              		.loc 1 421 17 is_stmt 1 view .LVU353
+ 421:mayo_core.c   **** 
+ 1331              		.loc 1 421 40 is_stmt 0 view .LVU354
+ 1332 0224 0B9B     		ldr	r3, [sp, #44]
+ 1333 0226 6801     		lsls	r0, r5, #5
+ 421:mayo_core.c   **** 
+ 1334              		.loc 1 421 17 view .LVU355
+ 1335 0228 3200     		movs	r2, r6
+ 1336 022a 2100     		movs	r1, r4
+ 421:mayo_core.c   **** 
+ 1337              		.loc 1 421 40 view .LVU356
+ 1338 022c C018     		adds	r0, r0, r3
+ 421:mayo_core.c   **** 
+ 1339              		.loc 1 421 17 view .LVU357
+ 1340 022e FFF7FEFF 		bl	add_El_M_to_A.constprop.0
+ 1341              	.LVL140:
+ 423:mayo_core.c   ****                     /* A[:,j*O:(j+1)*O] += E^ell * Mi */
+ 1342              		.loc 1 423 17 is_stmt 1 view .LVU358
+ 423:mayo_core.c   ****                     /* A[:,j*O:(j+1)*O] += E^ell * Mi */
+ 1343              		.loc 1 423 20 is_stmt 0 view .LVU359
+ 1344 0232 AC42     		cmp	r4, r5
+ 1345 0234 04D0     		beq	.L63
+ 1346              		.loc 1 425 21 is_stmt 1 view .LVU360
+ 1347 0236 3200     		movs	r2, r6
+ 1348 0238 2900     		movs	r1, r5
+ 1349 023a 0998     		ldr	r0, [sp, #36]
+ 1350 023c FFF7FEFF 		bl	add_El_M_to_A.constprop.0
+ 1351              	.LVL141:
+ 1352              	.L63:
+ 426:mayo_core.c   ****                 }
+ 427:mayo_core.c   ****                 ell++;
+ 1353              		.loc 1 427 17 view .LVU361
+ 416:mayo_core.c   ****                 /* y -= E^ell * u_all[ell] */
+ 1354              		.loc 1 416 43 is_stmt 0 discriminator 2 view .LVU362
+ 1355 0240 013D     		subs	r5, r5, #1
+ 1356              		.loc 1 427 20 view .LVU363
+ 1357 0242 0136     		adds	r6, r6, #1
+ 1358              	.LVL142:
+ 416:mayo_core.c   ****                 /* y -= E^ell * u_all[ell] */
+ 1359              		.loc 1 416 43 is_stmt 1 discriminator 2 view .LVU364
+ 416:mayo_core.c   ****                 /* y -= E^ell * u_all[ell] */
+ 1360              		.loc 1 416 36 discriminator 1 view .LVU365
+ 1361 0244 A542     		cmp	r5, r4
+ 1362 0246 D0DA     		bge	.L64
+ 416:mayo_core.c   ****                 /* y -= E^ell * u_all[ell] */
+ 1363              		.loc 1 416 36 is_stmt 0 discriminator 1 view .LVU366
+ 1364 0248 069B     		ldr	r3, [sp, #24]
+ 1365 024a 0533     		adds	r3, r3, #5
+ 1366 024c 1B1B     		subs	r3, r3, r4
+ 415:mayo_core.c   ****             for (j = MAYO_K - 1; j >= i; j--) {
+ 1367              		.loc 1 415 34 discriminator 2 view .LVU367
+ 1368 024e 0134     		adds	r4, r4, #1
+ 1369              	.LVL143:
+ 415:mayo_core.c   ****             for (j = MAYO_K - 1; j >= i; j--) {
+ 1370              		.loc 1 415 34 discriminator 2 view .LVU368
+ 1371 0250 0693     		str	r3, [sp, #24]
+ 1372              	.LVL144:
+ 415:mayo_core.c   ****             for (j = MAYO_K - 1; j >= i; j--) {
+ 1373              		.loc 1 415 34 is_stmt 1 discriminator 2 view .LVU369
+ 415:mayo_core.c   ****             for (j = MAYO_K - 1; j >= i; j--) {
+ 1374              		.loc 1 415 23 discriminator 1 view .LVU370
+ 1375 0252 052C     		cmp	r4, #5
+ 1376 0254 C3D1     		bne	.L60
+ 1377              	.LBB79:
+ 428:mayo_core.c   ****             }
+ 429:mayo_core.c   ****         }
+ 430:mayo_core.c   **** 
+ 431:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 432:mayo_core.c   ****         /* 8. Solve: A * x = y   (with randomisation from r)          */
+ 433:mayo_core.c   ****         /* ---------------------------------------------------------- */
+ 434:mayo_core.c   ****         {
+ 435:mayo_core.c   ****             /* Work on a copy of A and y since gauss_elim is destructive */
+ 436:mayo_core.c   ****             static uint8_t A_copy[MAYO_M * MAYO_KO / 2];
+ 1378              		.loc 1 436 13 view .LVU371
+ 437:mayo_core.c   ****             static uint8_t y_copy[MAYO_M / 2];
+ 1379              		.loc 1 437 13 view .LVU372
+ 438:mayo_core.c   ****             uint8_t x[( MAYO_KO + 1) / 2];
+ 1380              		.loc 1 438 13 view .LVU373
+ 439:mayo_core.c   **** 
+ 440:mayo_core.c   ****             memcpy(A_copy, g_A, sizeof(g_A));
+ 1381              		.loc 1 440 13 view .LVU374
+ 1382              	.LBB80:
+ 1383              	.LBB81:
+ 237:mayo_core.c   ****         uint8_t t = 0;
+ 1384              		.loc 1 237 13 is_stmt 0 view .LVU375
+ 1385 0256 0025     		movs	r5, #0
+ 1386              	.LBE81:
+ 1387              	.LBE80:
+ 1388              		.loc 1 440 13 view .LVU376
+ 1389 0258 A022     		movs	r2, #160
+ 1390 025a 4149     		ldr	r1, .L133+24
+ 1391 025c 4248     		ldr	r0, .L133+32
+ 1392 025e FFF7FEFF 		bl	memcpy
+ 1393              	.LVL145:
+ 441:mayo_core.c   ****             memcpy(y_copy, y,   sizeof(y));
+ 1394              		.loc 1 441 13 is_stmt 1 view .LVU377
+ 1395 0262 0822     		movs	r2, #8
+ 1396 0264 4148     		ldr	r0, .L133+36
+ 1397 0266 14A9     		add	r1, sp, #80
+ 1398 0268 FFF7FEFF 		bl	memcpy
+ 1399              	.LVL146:
+ 442:mayo_core.c   **** 
+ 443:mayo_core.c   ****             if (sample_solution(x, r_nibbles, A_copy, y_copy) == 0) {
+ 1400              		.loc 1 443 13 view .LVU378
+ 1401              	.LBB101:
+ 1402              	.LBI80:
+ 226:mayo_core.c   ****                             const uint8_t *r_nibbles,
+ 1403              		.loc 1 226 12 view .LVU379
+ 1404              	.LBB98:
+ 231:mayo_core.c   **** 
+ 1405              		.loc 1 231 5 view .LVU380
+ 234:mayo_core.c   **** 
+ 1406              		.loc 1 234 5 view .LVU381
+ 1407 026c 18AA     		add	r2, sp, #96
+ 1408              	.LVL147:
+ 234:mayo_core.c   **** 
+ 1409              		.loc 1 234 5 is_stmt 0 view .LVU382
+ 1410 026e 31AB     		add	r3, sp, #196
+ 1411              	.LVL148:
+ 234:mayo_core.c   **** 
+ 1412              		.loc 1 234 5 view .LVU383
+ 1413 0270 11CB     		ldmia	r3!, {r0, r4}
+ 1414 0272 11C2     		stmia	r2!, {r0, r4}
+ 1415              	.LVL149:
+ 234:mayo_core.c   **** 
+ 1416              		.loc 1 234 5 view .LVU384
+ 1417 0274 1B88     		ldrh	r3, [r3]
+ 1418              	.LVL150:
+ 234:mayo_core.c   **** 
+ 1419              		.loc 1 234 5 view .LVU385
+ 1420 0276 1380     		strh	r3, [r2]
+ 237:mayo_core.c   ****         uint8_t t = 0;
+ 1421              		.loc 1 237 5 is_stmt 1 view .LVU386
+ 1422              	.LVL151:
+ 237:mayo_core.c   ****         uint8_t t = 0;
+ 1423              		.loc 1 237 21 discriminator 1 view .LVU387
+ 1424              	.L66:
+ 1425              	.LBB82:
+ 239:mayo_core.c   ****             t ^= gf16_mul(nibble_get(A, eq * MAYO_KO + col),
+ 1426              		.loc 1 239 27 discriminator 1 view .LVU388
+ 238:mayo_core.c   ****         for (col = 0; col < MAYO_KO; col++)
+ 1427              		.loc 1 238 17 is_stmt 0 view .LVU389
+ 1428 0278 0026     		movs	r6, #0
+ 1429 027a 1427     		movs	r7, #20
+ 239:mayo_core.c   ****             t ^= gf16_mul(nibble_get(A, eq * MAYO_KO + col),
+ 1430              		.loc 1 239 18 view .LVU390
+ 1431 027c 3400     		movs	r4, r6
+ 1432 027e 6F43     		muls	r7, r5
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1433              		.loc 1 240 18 view .LVU391
+ 1434 0280 394B     		ldr	r3, .L133+32
+ 1435 0282 0693     		str	r3, [sp, #24]
+ 1436              	.LVL152:
+ 1437              	.L67:
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1438              		.loc 1 240 13 is_stmt 1 view .LVU392
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1439              		.loc 1 240 18 is_stmt 0 view .LVU393
+ 1440 0284 E119     		adds	r1, r4, r7
+ 1441 0286 0698     		ldr	r0, [sp, #24]
+ 1442 0288 FFF7FEFF 		bl	nibble_get
+ 1443              	.LVL153:
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1444              		.loc 1 240 18 discriminator 1 view .LVU394
+ 1445 028c 2100     		movs	r1, r4
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1446              		.loc 1 240 18 view .LVU395
+ 1447 028e 0790     		str	r0, [sp, #28]
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1448              		.loc 1 240 18 discriminator 1 view .LVU396
+ 1449 0290 31A8     		add	r0, sp, #196
+ 1450              	.LVL154:
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1451              		.loc 1 240 18 discriminator 1 view .LVU397
+ 1452 0292 FFF7FEFF 		bl	nibble_get
+ 1453              	.LVL155:
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1454              		.loc 1 240 18 discriminator 1 view .LVU398
+ 1455 0296 0100     		movs	r1, r0
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1456              		.loc 1 240 18 discriminator 2 view .LVU399
+ 1457 0298 0798     		ldr	r0, [sp, #28]
+ 1458 029a FFF7FEFF 		bl	gf16_mul
+ 1459              	.LVL156:
+ 239:mayo_core.c   ****             t ^= gf16_mul(nibble_get(A, eq * MAYO_KO + col),
+ 1460              		.loc 1 239 41 discriminator 3 view .LVU400
+ 1461 029e 0134     		adds	r4, r4, #1
+ 1462              	.LVL157:
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1463              		.loc 1 240 15 discriminator 3 view .LVU401
+ 1464 02a0 4640     		eors	r6, r0
+ 1465              	.LVL158:
+ 240:mayo_core.c   ****                           nibble_get(r_nibbles, col));
+ 1466              		.loc 1 240 15 discriminator 3 view .LVU402
+ 1467 02a2 F6B2     		uxtb	r6, r6
+ 1468              	.LVL159:
+ 239:mayo_core.c   ****             t ^= gf16_mul(nibble_get(A, eq * MAYO_KO + col),
+ 1469              		.loc 1 239 41 is_stmt 1 discriminator 3 view .LVU403
+ 239:mayo_core.c   ****             t ^= gf16_mul(nibble_get(A, eq * MAYO_KO + col),
+ 1470              		.loc 1 239 27 discriminator 1 view .LVU404
+ 1471 02a4 142C     		cmp	r4, #20
+ 1472 02a6 EDD1     		bne	.L67
+ 242:mayo_core.c   ****     }
+ 1473              		.loc 1 242 9 view .LVU405
+ 1474 02a8 2900     		movs	r1, r5
+ 1475 02aa 3200     		movs	r2, r6
+ 1476 02ac 2F48     		ldr	r0, .L133+36
+ 1477              	.LBE82:
+ 237:mayo_core.c   ****         uint8_t t = 0;
+ 1478              		.loc 1 237 33 is_stmt 0 discriminator 2 view .LVU406
+ 1479 02ae 0135     		adds	r5, r5, #1
+ 1480              	.LVL160:
+ 1481              	.LBB83:
+ 242:mayo_core.c   ****     }
+ 1482              		.loc 1 242 9 view .LVU407
+ 1483 02b0 FFF7FEFF 		bl	nibble_add
+ 1484              	.LVL161:
+ 242:mayo_core.c   ****     }
+ 1485              		.loc 1 242 9 view .LVU408
+ 1486              	.LBE83:
+ 237:mayo_core.c   ****         uint8_t t = 0;
+ 1487              		.loc 1 237 33 is_stmt 1 discriminator 2 view .LVU409
+ 237:mayo_core.c   ****         uint8_t t = 0;
+ 1488              		.loc 1 237 21 discriminator 1 view .LVU410
+ 1489 02b4 102D     		cmp	r5, #16
+ 1490 02b6 DFD1     		bne	.L66
+ 1491 02b8 0023     		movs	r3, #0
+ 1492              	.LBB84:
+ 1493              	.LBB85:
+ 171:mayo_core.c   ****     int i, c;
+ 1494              		.loc 1 171 9 is_stmt 0 view .LVU411
+ 1495 02ba 1F00     		movs	r7, r3
+ 1496              	.LBE85:
+ 1497              	.LBE84:
+ 1498 02bc 0693     		str	r3, [sp, #24]
+ 1499              	.LBB95:
+ 1500              	.LBB93:
+ 1501              	.LBB86:
+ 178:mayo_core.c   ****         }
+ 1502              		.loc 1 178 17 view .LVU412
+ 1503 02be 0994     		str	r4, [sp, #36]
+ 1504              	.LVL162:
+ 1505              	.L68:
+ 177:mayo_core.c   ****             if (nibble_get(A, i * MAYO_KO + pc) != 0) { next = i; break; }
+ 1506              		.loc 1 177 24 is_stmt 1 discriminator 1 view .LVU413
+ 177:mayo_core.c   ****             if (nibble_get(A, i * MAYO_KO + pc) != 0) { next = i; break; }
+ 1507              		.loc 1 177 16 is_stmt 0 view .LVU414
+ 1508 02c0 3C00     		movs	r4, r7
+ 178:mayo_core.c   ****         }
+ 1509              		.loc 1 178 17 view .LVU415
+ 1510 02c2 294E     		ldr	r6, .L133+32
+ 1511              	.LVL163:
+ 1512              	.L70:
+ 178:mayo_core.c   ****         }
+ 1513              		.loc 1 178 13 is_stmt 1 view .LVU416
+ 178:mayo_core.c   ****         }
+ 1514              		.loc 1 178 17 is_stmt 0 view .LVU417
+ 1515 02c4 099D     		ldr	r5, [sp, #36]
+ 1516 02c6 069B     		ldr	r3, [sp, #24]
+ 1517 02c8 6543     		muls	r5, r4
+ 1518 02ca 3000     		movs	r0, r6
+ 1519 02cc E918     		adds	r1, r5, r3
+ 1520 02ce FFF7FEFF 		bl	nibble_get
+ 1521              	.LVL164:
+ 178:mayo_core.c   ****         }
+ 1522              		.loc 1 178 16 discriminator 1 view .LVU418
+ 1523 02d2 0028     		cmp	r0, #0
+ 1524 02d4 00D0     		beq	.LCB1490
+ 1525 02d6 BEE0     		b	.L69	@long jump
+ 1526              	.LCB1490:
+ 177:mayo_core.c   ****             if (nibble_get(A, i * MAYO_KO + pc) != 0) { next = i; break; }
+ 1527              		.loc 1 177 35 is_stmt 1 discriminator 2 view .LVU419
+ 1528 02d8 0134     		adds	r4, r4, #1
+ 1529              	.LVL165:
+ 177:mayo_core.c   ****             if (nibble_get(A, i * MAYO_KO + pc) != 0) { next = i; break; }
+ 1530              		.loc 1 177 24 discriminator 1 view .LVU420
+ 1531 02da 102C     		cmp	r4, #16
+ 1532 02dc F2D1     		bne	.L70
+ 1533              	.LVL166:
+ 1534              	.L71:
+ 177:mayo_core.c   ****             if (nibble_get(A, i * MAYO_KO + pc) != 0) { next = i; break; }
+ 1535              		.loc 1 177 24 is_stmt 0 discriminator 1 view .LVU421
+ 1536              	.LBE86:
+ 174:mayo_core.c   ****         /* Find pivot in column pc from row pr downward */
+ 1537              		.loc 1 174 24 discriminator 1 view .LVU422
+ 1538 02de 069B     		ldr	r3, [sp, #24]
+ 1539 02e0 0133     		adds	r3, r3, #1
+ 1540              	.LVL167:
+ 174:mayo_core.c   ****         /* Find pivot in column pc from row pr downward */
+ 1541              		.loc 1 174 24 discriminator 1 view .LVU423
+ 1542 02e2 0693     		str	r3, [sp, #24]
+ 1543 02e4 142B     		cmp	r3, #20
+ 1544 02e6 EBD1     		bne	.L68
+ 218:mayo_core.c   **** }
+ 1545              		.loc 1 218 5 is_stmt 1 view .LVU424
+ 1546              	.LVL168:
+ 218:mayo_core.c   **** }
+ 1547              		.loc 1 218 5 is_stmt 0 view .LVU425
+ 1548              	.LBE93:
+ 1549              	.LBE95:
+ 247:mayo_core.c   **** 
+ 1550              		.loc 1 247 5 is_stmt 1 view .LVU426
+ 247:mayo_core.c   **** 
+ 1551              		.loc 1 247 5 is_stmt 0 view .LVU427
+ 1552              	.LBE98:
+ 1553              	.LBE101:
+ 1554              	.LBE79:
+ 1555              	.LBE55:
+ 333:mayo_core.c   ****         uint8_t ctr_byte = (uint8_t)ctr;
+ 1556              		.loc 1 333 34 is_stmt 1 discriminator 2 view .LVU428
+ 1557 02e8 089B     		ldr	r3, [sp, #32]
+ 1558 02ea 0133     		adds	r3, r3, #1
+ 1559 02ec 0893     		str	r3, [sp, #32]
+ 1560              	.LVL169:
+ 333:mayo_core.c   ****         uint8_t ctr_byte = (uint8_t)ctr;
+ 1561              		.loc 1 333 23 discriminator 1 view .LVU429
+ 1562 02ee 8023     		movs	r3, #128
+ 1563              	.LVL170:
+ 333:mayo_core.c   ****         uint8_t ctr_byte = (uint8_t)ctr;
+ 1564              		.loc 1 333 23 is_stmt 0 discriminator 1 view .LVU430
+ 1565 02f0 089A     		ldr	r2, [sp, #32]
+ 1566 02f2 5B00     		lsls	r3, r3, #1
+ 1567 02f4 9A42     		cmp	r2, r3
+ 1568 02f6 00D0     		beq	.LCB1542
+ 1569 02f8 AFE6     		b	.L92	@long jump
+ 1570              	.LCB1542:
+ 444:mayo_core.c   ****                 /* -------------------------------------------------- */
+ 445:mayo_core.c   ****                 /* 9. Build final signature vectors s_i = vi + O*xi   */
+ 446:mayo_core.c   ****                 /* -------------------------------------------------- */
+ 447:mayo_core.c   ****                 memset(sig, 0, MAYO_SIG_B);
+ 448:mayo_core.c   **** 
+ 449:mayo_core.c   ****                 for (i = 0; i < MAYO_K; i++) {
+ 450:mayo_core.c   ****                     /* oil vars for this block: x[i*O .. (i+1)*O - 1] */
+ 451:mayo_core.c   ****                     for (eq = 0; eq < MAYO_N; eq++) {
+ 452:mayo_core.c   ****                         uint8_t s_eq;
+ 453:mayo_core.c   ****                         if (eq < MAYO_V) {
+ 454:mayo_core.c   ****                             /* vinegar part: vi[eq] + (O*xi)[eq] */
+ 455:mayo_core.c   ****                             s_eq = nibble_get(V_buf + i * MAYO_V_B, eq);
+ 456:mayo_core.c   ****                             for (d = 0; d < MAYO_O; d++) {
+ 457:mayo_core.c   ****                                 uint8_t xi_d = nibble_get(x, i * MAYO_O + d);
+ 458:mayo_core.c   ****                                 s_eq ^= gf16_mul(nibble_get(O, eq * MAYO_O + d),
+ 459:mayo_core.c   ****                                                  xi_d);
+ 460:mayo_core.c   ****                             }
+ 461:mayo_core.c   ****                         } else {
+ 462:mayo_core.c   ****                             /* oil part: xi[eq - V] */
+ 463:mayo_core.c   ****                             s_eq = nibble_get(x, i * MAYO_O + (eq - MAYO_V));
+ 464:mayo_core.c   ****                         }
+ 465:mayo_core.c   ****                         /* Write s_eq into sig at nibble index i*N + eq */
+ 466:mayo_core.c   ****                         nibble_add(sig, i * MAYO_N + eq, s_eq);
+ 467:mayo_core.c   ****                     }
+ 468:mayo_core.c   ****                 }
+ 469:mayo_core.c   **** 
+ 470:mayo_core.c   ****                 /* Append salt */
+ 471:mayo_core.c   ****                 memcpy(sig + (MAYO_K * MAYO_N + 1) / 2, salt, MAYO_SALT_B);
+ 472:mayo_core.c   ****                 return 0;
+ 473:mayo_core.c   ****             }
+ 474:mayo_core.c   ****         }
+ 475:mayo_core.c   ****     }
+ 476:mayo_core.c   **** 
+ 477:mayo_core.c   ****     return -1; /* all 256 attempts failed */
+ 1571              		.loc 1 477 12 view .LVU431
+ 1572 02fa 0120     		movs	r0, #1
+ 1573 02fc 4042     		rsbs	r0, r0, #0
+ 1574 02fe A0E0     		b	.L42
+ 1575              	.LVL171:
+ 1576              	.L51:
+ 1577              	.LBB115:
+ 1578              	.LBB112:
+ 1579              	.LBB68:
+ 384:mayo_core.c   ****                             uint8_t vjs = nibble_get(V_buf + j * MAYO_V_B, s_idx);
+ 1580              		.loc 1 384 43 view .LVU432
+ 1581 0300 3900     		movs	r1, r7
+ 1582 0302 0E98     		ldr	r0, [sp, #56]
+ 1583              	.LVL172:
+ 384:mayo_core.c   ****                             uint8_t vjs = nibble_get(V_buf + j * MAYO_V_B, s_idx);
+ 1584              		.loc 1 384 43 view .LVU433
+ 1585 0304 FFF7FEFF 		bl	nibble_get
+ 1586              	.LVL173:
+ 385:mayo_core.c   ****                             uint8_t coeff;
+ 1587              		.loc 1 385 43 view .LVU434
+ 1588 0308 0699     		ldr	r1, [sp, #24]
+ 384:mayo_core.c   ****                             uint8_t vjs = nibble_get(V_buf + j * MAYO_V_B, s_idx);
+ 1589              		.loc 1 384 43 view .LVU435
+ 1590 030a 0F90     		str	r0, [sp, #60]
+ 385:mayo_core.c   ****                             uint8_t coeff;
+ 1591              		.loc 1 385 43 view .LVU436
+ 1592 030c 0E98     		ldr	r0, [sp, #56]
+ 1593 030e FFF7FEFF 		bl	nibble_get
+ 1594              	.LVL174:
+ 1595 0312 0100     		movs	r1, r0
+ 1596              	.LVL175:
+ 390:mayo_core.c   ****                             }
+ 1597              		.loc 1 390 33 is_stmt 1 view .LVU437
+ 390:mayo_core.c   ****                             }
+ 1598              		.loc 1 390 41 is_stmt 0 view .LVU438
+ 1599 0314 2800     		movs	r0, r5
+ 1600 0316 FFF7FEFF 		bl	gf16_mul
+ 1601              	.LVL176:
+ 390:mayo_core.c   ****                             }
+ 1602              		.loc 1 390 62 discriminator 1 view .LVU439
+ 1603 031a 2100     		movs	r1, r4
+ 390:mayo_core.c   ****                             }
+ 1604              		.loc 1 390 41 view .LVU440
+ 1605 031c 0500     		movs	r5, r0
+ 1606              	.LVL177:
+ 390:mayo_core.c   ****                             }
+ 1607              		.loc 1 390 62 discriminator 1 view .LVU441
+ 1608 031e 0F98     		ldr	r0, [sp, #60]
+ 1609 0320 FFF7FEFF 		bl	gf16_mul
+ 1610              	.LVL178:
+ 390:mayo_core.c   ****                             }
+ 1611              		.loc 1 390 39 discriminator 2 view .LVU442
+ 1612 0324 4540     		eors	r5, r0
+ 1613 0326 EDB2     		uxtb	r5, r5
+ 1614 0328 30E7     		b	.L52
+ 1615              	.LVL179:
+ 1616              	.L53:
+ 393:mayo_core.c   ****                                     nibble_add(u_all[ell], a,
+ 1617              		.loc 1 393 40 view .LVU443
+ 1618 032a 0024     		movs	r4, #0
+ 1619              	.L56:
+ 1620              	.LVL180:
+ 394:mayo_core.c   ****                                                gf16_mul(coeff, decoded[a]));
+ 1621              		.loc 1 394 37 is_stmt 1 view .LVU444
+ 1622 032c 23AB     		add	r3, sp, #140
+ 1623 032e E15C     		ldrb	r1, [r4, r3]
+ 1624 0330 2800     		movs	r0, r5
+ 1625 0332 FFF7FEFF 		bl	gf16_mul
+ 1626              	.LVL181:
+ 394:mayo_core.c   ****                                                gf16_mul(coeff, decoded[a]));
+ 1627              		.loc 1 394 37 is_stmt 0 discriminator 1 view .LVU445
+ 1628 0336 2100     		movs	r1, r4
+ 394:mayo_core.c   ****                                                gf16_mul(coeff, decoded[a]));
+ 1629              		.loc 1 394 37 view .LVU446
+ 1630 0338 0200     		movs	r2, r0
+ 393:mayo_core.c   ****                                     nibble_add(u_all[ell], a,
+ 1631              		.loc 1 393 58 discriminator 3 view .LVU447
+ 1632 033a 0134     		adds	r4, r4, #1
+ 1633              	.LVL182:
+ 394:mayo_core.c   ****                                                gf16_mul(coeff, decoded[a]));
+ 1634              		.loc 1 394 37 discriminator 1 view .LVU448
+ 1635 033c 0A98     		ldr	r0, [sp, #40]
+ 1636 033e FFF7FEFF 		bl	nibble_add
+ 1637              	.LVL183:
+ 393:mayo_core.c   ****                                     nibble_add(u_all[ell], a,
+ 1638              		.loc 1 393 58 is_stmt 1 discriminator 3 view .LVU449
+ 393:mayo_core.c   ****                                     nibble_add(u_all[ell], a,
+ 1639              		.loc 1 393 47 discriminator 1 view .LVU450
+ 1640 0342 102C     		cmp	r4, #16
+ 1641 0344 F2D1     		bne	.L56
+ 1642 0346 24E7     		b	.L57
+ 1643              	.L134:
+ 1644              		.align	2
+ 1645              	.L133:
+ 1646 0348 00000000 		.word	g_mayo_esk
+ 1647 034c 00000000 		.word	.LANCHOR0
+ 1648 0350 A8000000 		.word	g_Mi
+ 1649 0354 40000000 		.word	g_mayo_esk+64
+ 1650 0358 00000000 		.word	g_shake
+ 1651 035c 10000000 		.word	g_mayo_esk+16
+ 1652 0360 48010000 		.word	g_A
+ 1653 0364 0F000080 		.word	-2147483633
+ 1654 0368 08000000 		.word	A_copy.1
+ 1655 036c 00000000 		.word	.LANCHOR1
+ 1656              	.LVL184:
+ 1657              	.L80:
+ 393:mayo_core.c   ****                                     nibble_add(u_all[ell], a,
+ 1658              		.loc 1 393 47 is_stmt 0 discriminator 1 view .LVU451
+ 1659              	.LBE68:
+ 1660              	.LBE112:
+ 1661              	.LBB113:
+ 1662              	.LBB102:
+ 1663              	.LBB99:
+ 253:mayo_core.c   ****             if (nibble_get(A, eq * MAYO_KO + col) == 1) {
+ 1664              		.loc 1 253 41 is_stmt 1 discriminator 2 view .LVU452
+ 1665 0370 0134     		adds	r4, r4, #1
+ 1666              	.LVL185:
+ 253:mayo_core.c   ****             if (nibble_get(A, eq * MAYO_KO + col) == 1) {
+ 1667              		.loc 1 253 27 discriminator 1 view .LVU453
+ 1668 0372 142C     		cmp	r4, #20
+ 1669 0374 1DD0     		beq	.L83
+ 1670              	.LVL186:
+ 1671              	.L84:
+ 254:mayo_core.c   ****                 /* check it's really a pivot (all others in col are 0) */
+ 1672              		.loc 1 254 13 view .LVU454
+ 254:mayo_core.c   ****                 /* check it's really a pivot (all others in col are 0) */
+ 1673              		.loc 1 254 17 is_stmt 0 view .LVU455
+ 1674 0376 079B     		ldr	r3, [sp, #28]
+ 1675 0378 0698     		ldr	r0, [sp, #24]
+ 1676 037a 1919     		adds	r1, r3, r4
+ 1677 037c FFF7FEFF 		bl	nibble_get
+ 1678              	.LVL187:
+ 254:mayo_core.c   ****                 /* check it's really a pivot (all others in col are 0) */
+ 1679              		.loc 1 254 16 discriminator 1 view .LVU456
+ 1680 0380 0128     		cmp	r0, #1
+ 1681 0382 F5D1     		bne	.L80
+ 1682              	.LBB96:
+ 258:mayo_core.c   ****                     if (i != eq && nibble_get(A, i * MAYO_KO + col) != 0) {
+ 1683              		.loc 1 258 24 view .LVU457
+ 1684 0384 0026     		movs	r6, #0
+ 1685              	.L82:
+ 1686              	.LVL188:
+ 259:mayo_core.c   ****                         is_pivot = 0; break;
+ 1687              		.loc 1 259 21 is_stmt 1 view .LVU458
+ 259:mayo_core.c   ****                         is_pivot = 0; break;
+ 1688              		.loc 1 259 24 is_stmt 0 view .LVU459
+ 1689 0386 B542     		cmp	r5, r6
+ 1690 0388 07D0     		beq	.L81
+ 259:mayo_core.c   ****                         is_pivot = 0; break;
+ 1691              		.loc 1 259 36 discriminator 1 view .LVU460
+ 1692 038a 3900     		movs	r1, r7
+ 1693 038c 7143     		muls	r1, r6
+ 1694 038e 0698     		ldr	r0, [sp, #24]
+ 1695 0390 0919     		adds	r1, r1, r4
+ 1696 0392 FFF7FEFF 		bl	nibble_get
+ 1697              	.LVL189:
+ 259:mayo_core.c   ****                         is_pivot = 0; break;
+ 1698              		.loc 1 259 33 discriminator 1 view .LVU461
+ 1699 0396 0028     		cmp	r0, #0
+ 1700 0398 EAD1     		bne	.L80
+ 1701              	.L81:
+ 258:mayo_core.c   ****                     if (i != eq && nibble_get(A, i * MAYO_KO + col) != 0) {
+ 1702              		.loc 1 258 42 is_stmt 1 discriminator 2 view .LVU462
+ 1703 039a 0136     		adds	r6, r6, #1
+ 1704              	.LVL190:
+ 258:mayo_core.c   ****                     if (i != eq && nibble_get(A, i * MAYO_KO + col) != 0) {
+ 1705              		.loc 1 258 31 discriminator 1 view .LVU463
+ 1706 039c 102E     		cmp	r6, #16
+ 1707 039e F2D1     		bne	.L82
+ 1708              	.LVL191:
+ 263:mayo_core.c   ****                     nibble_add(x_out, col, nibble_get(y, eq));
+ 1709              		.loc 1 263 17 view .LVU464
+ 264:mayo_core.c   ****                     break;
+ 1710              		.loc 1 264 21 view .LVU465
+ 1711 03a0 2900     		movs	r1, r5
+ 1712 03a2 8948     		ldr	r0, .L135
+ 1713 03a4 FFF7FEFF 		bl	nibble_get
+ 1714              	.LVL192:
+ 264:mayo_core.c   ****                     break;
+ 1715              		.loc 1 264 21 is_stmt 0 discriminator 1 view .LVU466
+ 1716 03a8 2100     		movs	r1, r4
+ 264:mayo_core.c   ****                     break;
+ 1717              		.loc 1 264 21 view .LVU467
+ 1718 03aa 0200     		movs	r2, r0
+ 264:mayo_core.c   ****                     break;
+ 1719              		.loc 1 264 21 discriminator 1 view .LVU468
+ 1720 03ac 18A8     		add	r0, sp, #96
+ 1721              	.LVL193:
+ 264:mayo_core.c   ****                     break;
+ 1722              		.loc 1 264 21 discriminator 1 view .LVU469
+ 1723 03ae FFF7FEFF 		bl	nibble_add
+ 1724              	.LVL194:
+ 265:mayo_core.c   ****                 }
+ 1725              		.loc 1 265 21 is_stmt 1 view .LVU470
+ 1726              	.L83:
+ 265:mayo_core.c   ****                 }
+ 1727              		.loc 1 265 21 is_stmt 0 view .LVU471
+ 1728              	.LBE96:
+ 251:mayo_core.c   ****         /* find pivot column of row eq */
+ 1729              		.loc 1 251 33 is_stmt 1 discriminator 2 view .LVU472
+ 1730 03b2 0135     		adds	r5, r5, #1
+ 1731              	.LVL195:
+ 251:mayo_core.c   ****         /* find pivot column of row eq */
+ 1732              		.loc 1 251 21 discriminator 1 view .LVU473
+ 1733 03b4 102D     		cmp	r5, #16
+ 1734 03b6 00D0     		beq	.LCB1722
+ 1735 03b8 FEE0     		b	.L78	@long jump
+ 1736              	.LCB1722:
+ 1737              	.LVL196:
+ 251:mayo_core.c   ****         /* find pivot column of row eq */
+ 1738              		.loc 1 251 21 is_stmt 0 discriminator 1 view .LVU474
+ 1739              	.LBE99:
+ 1740              	.LBE102:
+ 447:mayo_core.c   **** 
+ 1741              		.loc 1 447 17 is_stmt 1 view .LVU475
+ 1742 03ba 4222     		movs	r2, #66
+ 1743 03bc 0021     		movs	r1, #0
+ 1744 03be 0C98     		ldr	r0, [sp, #48]
+ 1745 03c0 FFF7FEFF 		bl	memset
+ 1746              	.LVL197:
+ 449:mayo_core.c   ****                     /* oil vars for this block: x[i*O .. (i+1)*O - 1] */
+ 1747              		.loc 1 449 17 view .LVU476
+ 449:mayo_core.c   ****                     /* oil vars for this block: x[i*O .. (i+1)*O - 1] */
+ 1748              		.loc 1 449 31 discriminator 1 view .LVU477
+ 447:mayo_core.c   **** 
+ 1749              		.loc 1 447 17 is_stmt 0 view .LVU478
+ 1750 03c4 0025     		movs	r5, #0
+ 1751              	.LVL198:
+ 1752              	.L86:
+ 451:mayo_core.c   ****                         uint8_t s_eq;
+ 1753              		.loc 1 451 37 is_stmt 1 discriminator 1 view .LVU479
+ 1754              	.LBB103:
+ 455:mayo_core.c   ****                             for (d = 0; d < MAYO_O; d++) {
+ 1755              		.loc 1 455 36 is_stmt 0 view .LVU480
+ 1756 03c6 6B00     		lsls	r3, r5, #1
+ 1757 03c8 27AA     		add	r2, sp, #156
+ 1758 03ca D318     		adds	r3, r2, r3
+ 1759 03cc 0793     		str	r3, [sp, #28]
+ 1760 03ce 0523     		movs	r3, #5
+ 1761              	.LBE103:
+ 451:mayo_core.c   ****                         uint8_t s_eq;
+ 1762              		.loc 1 451 29 view .LVU481
+ 1763 03d0 0024     		movs	r4, #0
+ 1764 03d2 6B43     		muls	r3, r5
+ 1765 03d4 0893     		str	r3, [sp, #32]
+ 1766              	.LVL199:
+ 1767              	.L90:
+ 1768              	.LBB108:
+ 452:mayo_core.c   ****                         if (eq < MAYO_V) {
+ 1769              		.loc 1 452 25 is_stmt 1 view .LVU482
+ 453:mayo_core.c   ****                             /* vinegar part: vi[eq] + (O*xi)[eq] */
+ 1770              		.loc 1 453 25 view .LVU483
+ 453:mayo_core.c   ****                             /* vinegar part: vi[eq] + (O*xi)[eq] */
+ 1771              		.loc 1 453 28 is_stmt 0 view .LVU484
+ 1772 03d6 0F2C     		cmp	r4, #15
+ 1773 03d8 35DC     		bgt	.L87
+ 455:mayo_core.c   ****                             for (d = 0; d < MAYO_O; d++) {
+ 1774              		.loc 1 455 29 is_stmt 1 view .LVU485
+ 455:mayo_core.c   ****                             for (d = 0; d < MAYO_O; d++) {
+ 1775              		.loc 1 455 36 is_stmt 0 view .LVU486
+ 1776 03da 2100     		movs	r1, r4
+ 1777 03dc 0798     		ldr	r0, [sp, #28]
+ 1778 03de FFF7FEFF 		bl	nibble_get
+ 1779              	.LVL200:
+ 1780 03e2 2F00     		movs	r7, r5
+ 1781 03e4 0600     		movs	r6, r0
+ 1782              	.LVL201:
+ 456:mayo_core.c   ****                                 uint8_t xi_d = nibble_get(x, i * MAYO_O + d);
+ 1783              		.loc 1 456 29 is_stmt 1 view .LVU487
+ 456:mayo_core.c   ****                                 uint8_t xi_d = nibble_get(x, i * MAYO_O + d);
+ 1784              		.loc 1 456 43 discriminator 1 view .LVU488
+ 1785 03e6 A300     		lsls	r3, r4, #2
+ 1786 03e8 0693     		str	r3, [sp, #24]
+ 1787              	.LBB104:
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1788              		.loc 1 458 41 is_stmt 0 view .LVU489
+ 1789 03ea 784B     		ldr	r3, .L135+4
+ 1790              	.LVL202:
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1791              		.loc 1 458 41 view .LVU490
+ 1792 03ec 0A93     		str	r3, [sp, #40]
+ 1793              	.LBE104:
+ 456:mayo_core.c   ****                                 uint8_t xi_d = nibble_get(x, i * MAYO_O + d);
+ 1794              		.loc 1 456 43 discriminator 1 view .LVU491
+ 1795 03ee 2B1D     		adds	r3, r5, #4
+ 1796              	.LVL203:
+ 456:mayo_core.c   ****                                 uint8_t xi_d = nibble_get(x, i * MAYO_O + d);
+ 1797              		.loc 1 456 43 discriminator 1 view .LVU492
+ 1798 03f0 0B93     		str	r3, [sp, #44]
+ 1799              	.LVL204:
+ 1800              	.L88:
+ 1801              	.LBB105:
+ 457:mayo_core.c   ****                                 s_eq ^= gf16_mul(nibble_get(O, eq * MAYO_O + d),
+ 1802              		.loc 1 457 33 is_stmt 1 view .LVU493
+ 457:mayo_core.c   ****                                 s_eq ^= gf16_mul(nibble_get(O, eq * MAYO_O + d),
+ 1803              		.loc 1 457 48 is_stmt 0 view .LVU494
+ 1804 03f2 3900     		movs	r1, r7
+ 1805 03f4 18A8     		add	r0, sp, #96
+ 1806 03f6 FFF7FEFF 		bl	nibble_get
+ 1807              	.LVL205:
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1808              		.loc 1 458 41 view .LVU495
+ 1809 03fa 0699     		ldr	r1, [sp, #24]
+ 457:mayo_core.c   ****                                 s_eq ^= gf16_mul(nibble_get(O, eq * MAYO_O + d),
+ 1810              		.loc 1 457 48 view .LVU496
+ 1811 03fc 0990     		str	r0, [sp, #36]
+ 1812              	.LVL206:
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1813              		.loc 1 458 33 is_stmt 1 view .LVU497
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1814              		.loc 1 458 41 is_stmt 0 view .LVU498
+ 1815 03fe 0A98     		ldr	r0, [sp, #40]
+ 1816 0400 FFF7FEFF 		bl	nibble_get
+ 1817              	.LVL207:
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1818              		.loc 1 458 41 discriminator 1 view .LVU499
+ 1819 0404 0999     		ldr	r1, [sp, #36]
+ 1820 0406 FFF7FEFF 		bl	gf16_mul
+ 1821              	.LVL208:
+ 1822              	.LBE105:
+ 456:mayo_core.c   ****                                 uint8_t xi_d = nibble_get(x, i * MAYO_O + d);
+ 1823              		.loc 1 456 43 discriminator 1 view .LVU500
+ 1824 040a 069B     		ldr	r3, [sp, #24]
+ 1825              	.LBB106:
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1826              		.loc 1 458 38 discriminator 2 view .LVU501
+ 1827 040c 4640     		eors	r6, r0
+ 1828              	.LVL209:
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1829              		.loc 1 458 38 discriminator 2 view .LVU502
+ 1830              	.LBE106:
+ 456:mayo_core.c   ****                                 uint8_t xi_d = nibble_get(x, i * MAYO_O + d);
+ 1831              		.loc 1 456 43 discriminator 1 view .LVU503
+ 1832 040e 0133     		adds	r3, r3, #1
+ 1833 0410 0693     		str	r3, [sp, #24]
+ 1834 0412 0B9B     		ldr	r3, [sp, #44]
+ 1835 0414 0137     		adds	r7, r7, #1
+ 1836              	.LBB107:
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1837              		.loc 1 458 38 discriminator 2 view .LVU504
+ 1838 0416 F6B2     		uxtb	r6, r6
+ 1839              	.LVL210:
+ 458:mayo_core.c   ****                                                  xi_d);
+ 1840              		.loc 1 458 38 discriminator 2 view .LVU505
+ 1841              	.LBE107:
+ 456:mayo_core.c   ****                                 uint8_t xi_d = nibble_get(x, i * MAYO_O + d);
+ 1842              		.loc 1 456 54 is_stmt 1 discriminator 3 view .LVU506
+ 456:mayo_core.c   ****                                 uint8_t xi_d = nibble_get(x, i * MAYO_O + d);
+ 1843              		.loc 1 456 43 discriminator 1 view .LVU507
+ 1844 0418 9F42     		cmp	r7, r3
+ 1845 041a EAD1     		bne	.L88
+ 1846              	.LVL211:
+ 1847              	.L89:
+ 466:mayo_core.c   ****                     }
+ 1848              		.loc 1 466 25 view .LVU508
+ 1849 041c 089B     		ldr	r3, [sp, #32]
+ 1850 041e 3200     		movs	r2, r6
+ 1851 0420 E118     		adds	r1, r4, r3
+ 1852 0422 0C98     		ldr	r0, [sp, #48]
+ 1853              	.LBE108:
+ 451:mayo_core.c   ****                         uint8_t s_eq;
+ 1854              		.loc 1 451 49 is_stmt 0 discriminator 2 view .LVU509
+ 1855 0424 0134     		adds	r4, r4, #1
+ 1856              	.LVL212:
+ 1857              	.LBB109:
+ 466:mayo_core.c   ****                     }
+ 1858              		.loc 1 466 25 view .LVU510
+ 1859 0426 FFF7FEFF 		bl	nibble_add
+ 1860              	.LVL213:
+ 1861              	.LBE109:
+ 451:mayo_core.c   ****                         uint8_t s_eq;
+ 1862              		.loc 1 451 49 is_stmt 1 discriminator 2 view .LVU511
+ 451:mayo_core.c   ****                         uint8_t s_eq;
+ 1863              		.loc 1 451 37 discriminator 1 view .LVU512
+ 1864 042a 142C     		cmp	r4, #20
+ 1865 042c D3D1     		bne	.L90
+ 449:mayo_core.c   ****                     /* oil vars for this block: x[i*O .. (i+1)*O - 1] */
+ 1866              		.loc 1 449 42 discriminator 2 view .LVU513
+ 449:mayo_core.c   ****                     /* oil vars for this block: x[i*O .. (i+1)*O - 1] */
+ 1867              		.loc 1 449 31 discriminator 1 view .LVU514
+ 1868 042e 0435     		adds	r5, r5, #4
+ 1869 0430 142D     		cmp	r5, #20
+ 1870 0432 C8D1     		bne	.L86
+ 471:mayo_core.c   ****                 return 0;
+ 1871              		.loc 1 471 17 view .LVU515
+ 1872 0434 0C98     		ldr	r0, [sp, #48]
+ 1873 0436 1022     		movs	r2, #16
+ 1874 0438 3230     		adds	r0, r0, #50
+ 1875 043a 1FA9     		add	r1, sp, #124
+ 1876 043c FFF7FEFF 		bl	memcpy
+ 1877              	.LVL214:
+ 472:mayo_core.c   ****             }
+ 1878              		.loc 1 472 17 view .LVU516
+ 472:mayo_core.c   ****             }
+ 1879              		.loc 1 472 24 is_stmt 0 view .LVU517
+ 1880 0440 0020     		movs	r0, #0
+ 1881              	.LVL215:
+ 1882              	.L42:
+ 472:mayo_core.c   ****             }
+ 1883              		.loc 1 472 24 view .LVU518
+ 1884              	.LBE113:
+ 1885              	.LBE115:
+ 478:mayo_core.c   **** }
+ 1886              		.loc 1 478 1 view .LVU519
+ 1887 0442 53B0     		add	sp, sp, #332
+ 1888              		@ sp needed
+ 1889 0444 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1890              	.LVL216:
+ 1891              	.L87:
+ 1892              	.LBB116:
+ 1893              	.LBB114:
+ 1894              	.LBB110:
+ 463:mayo_core.c   ****                         }
+ 1895              		.loc 1 463 29 is_stmt 1 view .LVU520
+ 463:mayo_core.c   ****                         }
+ 1896              		.loc 1 463 36 is_stmt 0 view .LVU521
+ 1897 0446 2900     		movs	r1, r5
+ 1898 0448 1039     		subs	r1, r1, #16
+ 1899 044a 0919     		adds	r1, r1, r4
+ 1900 044c 18A8     		add	r0, sp, #96
+ 1901 044e FFF7FEFF 		bl	nibble_get
+ 1902              	.LVL217:
+ 1903 0452 0600     		movs	r6, r0
+ 1904 0454 E2E7     		b	.L89
+ 1905              	.LVL218:
+ 1906              	.L69:
+ 463:mayo_core.c   ****                         }
+ 1907              		.loc 1 463 36 view .LVU522
+ 1908              	.LBE110:
+ 1909              	.LBB111:
+ 1910              	.LBB100:
+ 1911              	.LBB97:
+ 1912              	.LBB94:
+ 1913              	.LBB92:
+ 180:mayo_core.c   **** 
+ 1914              		.loc 1 180 9 is_stmt 1 view .LVU523
+ 183:mayo_core.c   ****             for (c = 0; c < MAYO_KO; c++) {
+ 1915              		.loc 1 183 9 view .LVU524
+ 196:mayo_core.c   ****         uint8_t inv = gf16_inv(piv);
+ 1916              		.loc 1 196 40 is_stmt 0 view .LVU525
+ 1917 0456 099B     		ldr	r3, [sp, #36]
+ 1918 0458 7B43     		muls	r3, r7
+ 1919 045a 0A93     		str	r3, [sp, #40]
+ 183:mayo_core.c   ****             for (c = 0; c < MAYO_KO; c++) {
+ 1920              		.loc 1 183 12 view .LVU526
+ 1921 045c BC42     		cmp	r4, r7
+ 1922 045e 33D0     		beq	.L95
+ 1923 0460 0A9E     		ldr	r6, [sp, #40]
+ 1924              	.LBB87:
+ 1925              	.LBB88:
+ 187:mayo_core.c   ****                 nibble_set(A, next * MAYO_KO + c, tmp);
+ 1926              		.loc 1 187 47 view .LVU527
+ 1927 0462 0795     		str	r5, [sp, #28]
+ 1928 0464 3300     		movs	r3, r6
+ 1929 0466 1433     		adds	r3, r3, #20
+ 1930 0468 0B93     		str	r3, [sp, #44]
+ 1931              	.L72:
+ 1932              	.LVL219:
+ 185:mayo_core.c   ****                 nibble_set(A, pr * MAYO_KO + c,
+ 1933              		.loc 1 185 17 is_stmt 1 view .LVU528
+ 185:mayo_core.c   ****                 nibble_set(A, pr * MAYO_KO + c,
+ 1934              		.loc 1 185 31 is_stmt 0 view .LVU529
+ 1935 046a 594D     		ldr	r5, .L135+8
+ 1936 046c 3100     		movs	r1, r6
+ 1937 046e 2800     		movs	r0, r5
+ 1938 0470 FFF7FEFF 		bl	nibble_get
+ 1939              	.LVL220:
+ 186:mayo_core.c   ****                            nibble_get(A, next * MAYO_KO + c));
+ 1940              		.loc 1 186 17 view .LVU530
+ 1941 0474 0799     		ldr	r1, [sp, #28]
+ 185:mayo_core.c   ****                 nibble_set(A, pr * MAYO_KO + c,
+ 1942              		.loc 1 185 31 view .LVU531
+ 1943 0476 0D90     		str	r0, [sp, #52]
+ 1944              	.LVL221:
+ 186:mayo_core.c   ****                            nibble_get(A, next * MAYO_KO + c));
+ 1945              		.loc 1 186 17 is_stmt 1 view .LVU532
+ 1946 0478 2800     		movs	r0, r5
+ 1947 047a FFF7FEFF 		bl	nibble_get
+ 1948              	.LVL222:
+ 186:mayo_core.c   ****                            nibble_get(A, next * MAYO_KO + c));
+ 1949              		.loc 1 186 17 is_stmt 0 discriminator 1 view .LVU533
+ 1950 047e 3100     		movs	r1, r6
+ 186:mayo_core.c   ****                            nibble_get(A, next * MAYO_KO + c));
+ 1951              		.loc 1 186 17 view .LVU534
+ 1952 0480 0200     		movs	r2, r0
+ 186:mayo_core.c   ****                            nibble_get(A, next * MAYO_KO + c));
+ 1953              		.loc 1 186 17 discriminator 1 view .LVU535
+ 1954 0482 2800     		movs	r0, r5
+ 1955 0484 FFF7FEFF 		bl	nibble_set
+ 1956              	.LVL223:
+ 188:mayo_core.c   ****             }
+ 1957              		.loc 1 188 17 is_stmt 1 view .LVU536
+ 1958 0488 2800     		movs	r0, r5
+ 1959 048a 0D9A     		ldr	r2, [sp, #52]
+ 1960 048c 0799     		ldr	r1, [sp, #28]
+ 1961 048e FFF7FEFF 		bl	nibble_set
+ 1962              	.LVL224:
+ 1963              	.LBE88:
+ 184:mayo_core.c   ****                 uint8_t tmp = nibble_get(A, pr * MAYO_KO + c);
+ 1964              		.loc 1 184 39 discriminator 3 view .LVU537
+ 184:mayo_core.c   ****                 uint8_t tmp = nibble_get(A, pr * MAYO_KO + c);
+ 1965              		.loc 1 184 27 discriminator 1 view .LVU538
+ 1966 0492 079B     		ldr	r3, [sp, #28]
+ 1967 0494 0136     		adds	r6, r6, #1
+ 1968 0496 0133     		adds	r3, r3, #1
+ 1969 0498 0793     		str	r3, [sp, #28]
+ 1970 049a 0B9B     		ldr	r3, [sp, #44]
+ 1971 049c 9E42     		cmp	r6, r3
+ 1972 049e E4D1     		bne	.L72
+ 190:mayo_core.c   ****             nibble_set(aug, pr, nibble_get(aug, next));
+ 1973              		.loc 1 190 13 view .LVU539
+ 190:mayo_core.c   ****             nibble_set(aug, pr, nibble_get(aug, next));
+ 1974              		.loc 1 190 27 is_stmt 0 view .LVU540
+ 1975 04a0 494D     		ldr	r5, .L135
+ 1976 04a2 3900     		movs	r1, r7
+ 1977 04a4 2800     		movs	r0, r5
+ 1978 04a6 FFF7FEFF 		bl	nibble_get
+ 1979              	.LVL225:
+ 191:mayo_core.c   ****             nibble_set(aug, next, tmp);
+ 1980              		.loc 1 191 13 view .LVU541
+ 1981 04aa 2100     		movs	r1, r4
+ 190:mayo_core.c   ****             nibble_set(aug, pr, nibble_get(aug, next));
+ 1982              		.loc 1 190 27 view .LVU542
+ 1983 04ac 0600     		movs	r6, r0
+ 1984              	.LVL226:
+ 191:mayo_core.c   ****             nibble_set(aug, next, tmp);
+ 1985              		.loc 1 191 13 is_stmt 1 view .LVU543
+ 1986 04ae 2800     		movs	r0, r5
+ 1987 04b0 FFF7FEFF 		bl	nibble_get
+ 1988              	.LVL227:
+ 191:mayo_core.c   ****             nibble_set(aug, next, tmp);
+ 1989              		.loc 1 191 13 is_stmt 0 discriminator 1 view .LVU544
+ 1990 04b4 3900     		movs	r1, r7
+ 191:mayo_core.c   ****             nibble_set(aug, next, tmp);
+ 1991              		.loc 1 191 13 view .LVU545
+ 1992 04b6 0200     		movs	r2, r0
+ 191:mayo_core.c   ****             nibble_set(aug, next, tmp);
+ 1993              		.loc 1 191 13 discriminator 1 view .LVU546
+ 1994 04b8 2800     		movs	r0, r5
+ 1995 04ba FFF7FEFF 		bl	nibble_set
+ 1996              	.LVL228:
+ 192:mayo_core.c   ****         }
+ 1997              		.loc 1 192 13 is_stmt 1 view .LVU547
+ 1998 04be 3200     		movs	r2, r6
+ 1999 04c0 2100     		movs	r1, r4
+ 2000 04c2 2800     		movs	r0, r5
+ 2001 04c4 FFF7FEFF 		bl	nibble_set
+ 2002              	.LVL229:
+ 2003              	.L95:
+ 192:mayo_core.c   ****         }
+ 2004              		.loc 1 192 13 is_stmt 0 view .LVU548
+ 2005              	.LBE87:
+ 196:mayo_core.c   ****         uint8_t inv = gf16_inv(piv);
+ 2006              		.loc 1 196 9 is_stmt 1 view .LVU549
+ 196:mayo_core.c   ****         uint8_t inv = gf16_inv(piv);
+ 2007              		.loc 1 196 23 is_stmt 0 view .LVU550
+ 2008 04c8 069B     		ldr	r3, [sp, #24]
+ 2009 04ca 0A99     		ldr	r1, [sp, #40]
+ 2010 04cc 9C46     		mov	ip, r3
+ 2011 04ce 4048     		ldr	r0, .L135+8
+ 2012 04d0 6144     		add	r1, r1, ip
+ 2013 04d2 FFF7FEFF 		bl	nibble_get
+ 2014              	.LVL230:
+ 2015 04d6 041E     		subs	r4, r0, #0
+ 2016              	.LVL231:
+ 197:mayo_core.c   ****         for (c = pc; c < MAYO_KO; c++) {
+ 2017              		.loc 1 197 9 is_stmt 1 view .LVU551
+ 2018              	.LBB89:
+ 2019              	.LBI89:
+  28:mayo_gf16.h   **** {
+ 2020              		.loc 2 28 23 view .LVU552
+ 2021              	.LBB90:
+  30:mayo_gf16.h   ****     uint8_t a2  = gf16_mul(a,  a);
+ 2022              		.loc 2 30 5 view .LVU553
+  30:mayo_gf16.h   ****     uint8_t a2  = gf16_mul(a,  a);
+ 2023              		.loc 2 30 8 is_stmt 0 view .LVU554
+ 2024 04d8 11D0     		beq	.L73
+  31:mayo_gf16.h   ****     uint8_t a4  = gf16_mul(a2, a2);
+ 2025              		.loc 2 31 5 is_stmt 1 view .LVU555
+  31:mayo_gf16.h   ****     uint8_t a4  = gf16_mul(a2, a2);
+ 2026              		.loc 2 31 19 is_stmt 0 view .LVU556
+ 2027 04da 0100     		movs	r1, r0
+ 2028 04dc FFF7FEFF 		bl	gf16_mul
+ 2029              	.LVL232:
+  32:mayo_gf16.h   ****     uint8_t a8  = gf16_mul(a4, a4);
+ 2030              		.loc 2 32 19 view .LVU557
+ 2031 04e0 0100     		movs	r1, r0
+  31:mayo_gf16.h   ****     uint8_t a4  = gf16_mul(a2, a2);
+ 2032              		.loc 2 31 19 view .LVU558
+ 2033 04e2 0400     		movs	r4, r0
+ 2034              	.LVL233:
+  32:mayo_gf16.h   ****     uint8_t a8  = gf16_mul(a4, a4);
+ 2035              		.loc 2 32 5 is_stmt 1 view .LVU559
+  32:mayo_gf16.h   ****     uint8_t a8  = gf16_mul(a4, a4);
+ 2036              		.loc 2 32 19 is_stmt 0 view .LVU560
+ 2037 04e4 FFF7FEFF 		bl	gf16_mul
+ 2038              	.LVL234:
+  32:mayo_gf16.h   ****     uint8_t a8  = gf16_mul(a4, a4);
+ 2039              		.loc 2 32 19 view .LVU561
+ 2040 04e8 0500     		movs	r5, r0
+ 2041              	.LVL235:
+  33:mayo_gf16.h   ****     uint8_t a12 = gf16_mul(a8, a4);
+ 2042              		.loc 2 33 5 is_stmt 1 view .LVU562
+  33:mayo_gf16.h   ****     uint8_t a12 = gf16_mul(a8, a4);
+ 2043              		.loc 2 33 19 is_stmt 0 view .LVU563
+ 2044 04ea 0100     		movs	r1, r0
+ 2045 04ec FFF7FEFF 		bl	gf16_mul
+ 2046              	.LVL236:
+  34:mayo_gf16.h   ****     return            gf16_mul(a12, a2);   /* a^14 */
+ 2047              		.loc 2 34 5 is_stmt 1 view .LVU564
+  34:mayo_gf16.h   ****     return            gf16_mul(a12, a2);   /* a^14 */
+ 2048              		.loc 2 34 19 is_stmt 0 view .LVU565
+ 2049 04f0 2900     		movs	r1, r5
+ 2050 04f2 FFF7FEFF 		bl	gf16_mul
+ 2051              	.LVL237:
+  35:mayo_gf16.h   **** }
+ 2052              		.loc 2 35 5 is_stmt 1 view .LVU566
+  35:mayo_gf16.h   **** }
+ 2053              		.loc 2 35 23 is_stmt 0 view .LVU567
+ 2054 04f6 2100     		movs	r1, r4
+ 2055 04f8 FFF7FEFF 		bl	gf16_mul
+ 2056              	.LVL238:
+  35:mayo_gf16.h   **** }
+ 2057              		.loc 2 35 23 view .LVU568
+ 2058 04fc 0400     		movs	r4, r0
+ 2059              	.LVL239:
+ 2060              	.L73:
+  35:mayo_gf16.h   **** }
+ 2061              		.loc 2 35 23 view .LVU569
+ 2062              	.LBE90:
+ 2063              	.LBE89:
+ 198:mayo_core.c   ****             nibble_set(A, pr * MAYO_KO + c,
+ 2064              		.loc 1 198 9 is_stmt 1 view .LVU570
+ 198:mayo_core.c   ****             nibble_set(A, pr * MAYO_KO + c,
+ 2065              		.loc 1 198 24 discriminator 1 view .LVU571
+ 2066 04fe 099B     		ldr	r3, [sp, #36]
+ 198:mayo_core.c   ****             nibble_set(A, pr * MAYO_KO + c,
+ 2067              		.loc 1 198 16 is_stmt 0 view .LVU572
+ 2068 0500 069D     		ldr	r5, [sp, #24]
+ 2069 0502 7B43     		muls	r3, r7
+ 2070 0504 0A93     		str	r3, [sp, #40]
+ 2071              	.LVL240:
+ 2072              	.L74:
+ 199:mayo_core.c   ****                        gf16_mul(nibble_get(A, pr * MAYO_KO + c), inv));
+ 2073              		.loc 1 199 13 is_stmt 1 view .LVU573
+ 2074 0506 0A9B     		ldr	r3, [sp, #40]
+ 2075 0508 314E     		ldr	r6, .L135+8
+ 2076 050a EB18     		adds	r3, r5, r3
+ 2077 050c 1900     		movs	r1, r3
+ 2078 050e 3000     		movs	r0, r6
+ 2079 0510 0793     		str	r3, [sp, #28]
+ 2080 0512 FFF7FEFF 		bl	nibble_get
+ 2081              	.LVL241:
+ 199:mayo_core.c   ****                        gf16_mul(nibble_get(A, pr * MAYO_KO + c), inv));
+ 2082              		.loc 1 199 13 is_stmt 0 discriminator 1 view .LVU574
+ 2083 0516 2100     		movs	r1, r4
+ 2084 0518 FFF7FEFF 		bl	gf16_mul
+ 2085              	.LVL242:
+ 198:mayo_core.c   ****             nibble_set(A, pr * MAYO_KO + c,
+ 2086              		.loc 1 198 36 discriminator 3 view .LVU575
+ 2087 051c 0135     		adds	r5, r5, #1
+ 2088              	.LVL243:
+ 199:mayo_core.c   ****                        gf16_mul(nibble_get(A, pr * MAYO_KO + c), inv));
+ 2089              		.loc 1 199 13 discriminator 1 view .LVU576
+ 2090 051e 0200     		movs	r2, r0
+ 199:mayo_core.c   ****                        gf16_mul(nibble_get(A, pr * MAYO_KO + c), inv));
+ 2091              		.loc 1 199 13 discriminator 2 view .LVU577
+ 2092 0520 0799     		ldr	r1, [sp, #28]
+ 2093 0522 3000     		movs	r0, r6
+ 2094 0524 FFF7FEFF 		bl	nibble_set
+ 2095              	.LVL244:
+ 198:mayo_core.c   ****             nibble_set(A, pr * MAYO_KO + c,
+ 2096              		.loc 1 198 36 is_stmt 1 discriminator 3 view .LVU578
+ 198:mayo_core.c   ****             nibble_set(A, pr * MAYO_KO + c,
+ 2097              		.loc 1 198 24 discriminator 1 view .LVU579
+ 2098 0528 142D     		cmp	r5, #20
+ 2099 052a ECD1     		bne	.L74
+ 202:mayo_core.c   **** 
+ 2100              		.loc 1 202 9 view .LVU580
+ 2101 052c 264D     		ldr	r5, .L135
+ 2102              	.LVL245:
+ 202:mayo_core.c   **** 
+ 2103              		.loc 1 202 9 is_stmt 0 view .LVU581
+ 2104 052e 3900     		movs	r1, r7
+ 2105 0530 2800     		movs	r0, r5
+ 2106 0532 FFF7FEFF 		bl	nibble_get
+ 2107              	.LVL246:
+ 202:mayo_core.c   **** 
+ 2108              		.loc 1 202 9 discriminator 1 view .LVU582
+ 2109 0536 2100     		movs	r1, r4
+ 2110 0538 FFF7FEFF 		bl	gf16_mul
+ 2111              	.LVL247:
+ 202:mayo_core.c   **** 
+ 2112              		.loc 1 202 9 discriminator 2 view .LVU583
+ 2113 053c 3900     		movs	r1, r7
+ 202:mayo_core.c   **** 
+ 2114              		.loc 1 202 9 discriminator 1 view .LVU584
+ 2115 053e 0200     		movs	r2, r0
+ 202:mayo_core.c   **** 
+ 2116              		.loc 1 202 9 discriminator 2 view .LVU585
+ 2117 0540 2800     		movs	r0, r5
+ 2118 0542 FFF7FEFF 		bl	nibble_set
+ 2119              	.LVL248:
+ 205:mayo_core.c   ****             if (i == pr) continue;
+ 2120              		.loc 1 205 9 is_stmt 1 view .LVU586
+ 205:mayo_core.c   ****             if (i == pr) continue;
+ 2121              		.loc 1 205 23 discriminator 1 view .LVU587
+ 205:mayo_core.c   ****             if (i == pr) continue;
+ 2122              		.loc 1 205 16 is_stmt 0 view .LVU588
+ 2123 0546 0024     		movs	r4, #0
+ 2124              	.LVL249:
+ 2125              	.L77:
+ 2126              	.LBB91:
+ 206:mayo_core.c   ****             uint8_t factor = nibble_get(A, i * MAYO_KO + pc);
+ 2127              		.loc 1 206 13 is_stmt 1 view .LVU589
+ 206:mayo_core.c   ****             uint8_t factor = nibble_get(A, i * MAYO_KO + pc);
+ 2128              		.loc 1 206 16 is_stmt 0 view .LVU590
+ 2129 0548 A742     		cmp	r7, r4
+ 2130 054a 2CD0     		beq	.L75
+ 207:mayo_core.c   ****             if (factor == 0) continue;
+ 2131              		.loc 1 207 13 is_stmt 1 view .LVU591
+ 2132 054c 099B     		ldr	r3, [sp, #36]
+ 207:mayo_core.c   ****             if (factor == 0) continue;
+ 2133              		.loc 1 207 30 is_stmt 0 view .LVU592
+ 2134 054e 069A     		ldr	r2, [sp, #24]
+ 2135 0550 6343     		muls	r3, r4
+ 2136 0552 1F48     		ldr	r0, .L135+8
+ 2137 0554 9918     		adds	r1, r3, r2
+ 2138 0556 0793     		str	r3, [sp, #28]
+ 2139 0558 FFF7FEFF 		bl	nibble_get
+ 2140              	.LVL250:
+ 2141 055c 051E     		subs	r5, r0, #0
+ 2142              	.LVL251:
+ 208:mayo_core.c   ****             for (c = pc; c < MAYO_KO; c++) {
+ 2143              		.loc 1 208 13 is_stmt 1 view .LVU593
+ 208:mayo_core.c   ****             for (c = pc; c < MAYO_KO; c++) {
+ 2144              		.loc 1 208 16 is_stmt 0 view .LVU594
+ 2145 055e 22D0     		beq	.L75
+ 209:mayo_core.c   ****                 nibble_add(A, i * MAYO_KO + c,
+ 2146              		.loc 1 209 20 view .LVU595
+ 2147 0560 069E     		ldr	r6, [sp, #24]
+ 2148              	.LVL252:
+ 2149              	.L76:
+ 210:mayo_core.c   ****                            gf16_mul(factor, nibble_get(A, pr * MAYO_KO + c)));
+ 2150              		.loc 1 210 17 is_stmt 1 view .LVU596
+ 2151 0562 0A9B     		ldr	r3, [sp, #40]
+ 2152 0564 F118     		adds	r1, r6, r3
+ 2153 0566 1A4B     		ldr	r3, .L135+8
+ 2154 0568 1800     		movs	r0, r3
+ 2155 056a 0B93     		str	r3, [sp, #44]
+ 2156 056c FFF7FEFF 		bl	nibble_get
+ 2157              	.LVL253:
+ 2158 0570 0100     		movs	r1, r0
+ 210:mayo_core.c   ****                            gf16_mul(factor, nibble_get(A, pr * MAYO_KO + c)));
+ 2159              		.loc 1 210 17 is_stmt 0 discriminator 1 view .LVU597
+ 2160 0572 2800     		movs	r0, r5
+ 2161 0574 FFF7FEFF 		bl	gf16_mul
+ 2162              	.LVL254:
+ 210:mayo_core.c   ****                            gf16_mul(factor, nibble_get(A, pr * MAYO_KO + c)));
+ 2163              		.loc 1 210 17 view .LVU598
+ 2164 0578 079B     		ldr	r3, [sp, #28]
+ 210:mayo_core.c   ****                            gf16_mul(factor, nibble_get(A, pr * MAYO_KO + c)));
+ 2165              		.loc 1 210 17 discriminator 1 view .LVU599
+ 2166 057a 0200     		movs	r2, r0
+ 210:mayo_core.c   ****                            gf16_mul(factor, nibble_get(A, pr * MAYO_KO + c)));
+ 2167              		.loc 1 210 17 view .LVU600
+ 2168 057c F118     		adds	r1, r6, r3
+ 210:mayo_core.c   ****                            gf16_mul(factor, nibble_get(A, pr * MAYO_KO + c)));
+ 2169              		.loc 1 210 17 discriminator 2 view .LVU601
+ 2170 057e 0B98     		ldr	r0, [sp, #44]
+ 209:mayo_core.c   ****                 nibble_add(A, i * MAYO_KO + c,
+ 2171              		.loc 1 209 40 discriminator 3 view .LVU602
+ 2172 0580 0136     		adds	r6, r6, #1
+ 2173              	.LVL255:
+ 210:mayo_core.c   ****                            gf16_mul(factor, nibble_get(A, pr * MAYO_KO + c)));
+ 2174              		.loc 1 210 17 discriminator 2 view .LVU603
+ 2175 0582 FFF7FEFF 		bl	nibble_add
+ 2176              	.LVL256:
+ 209:mayo_core.c   ****                 nibble_add(A, i * MAYO_KO + c,
+ 2177              		.loc 1 209 40 is_stmt 1 discriminator 3 view .LVU604
+ 209:mayo_core.c   ****                 nibble_add(A, i * MAYO_KO + c,
+ 2178              		.loc 1 209 28 discriminator 1 view .LVU605
+ 2179 0586 142E     		cmp	r6, #20
+ 2180 0588 EBD1     		bne	.L76
+ 213:mayo_core.c   ****         }
+ 2181              		.loc 1 213 13 view .LVU606
+ 2182 058a 0F4E     		ldr	r6, .L135
+ 2183              	.LVL257:
+ 213:mayo_core.c   ****         }
+ 2184              		.loc 1 213 13 is_stmt 0 view .LVU607
+ 2185 058c 3900     		movs	r1, r7
+ 2186 058e 3000     		movs	r0, r6
+ 2187 0590 FFF7FEFF 		bl	nibble_get
+ 2188              	.LVL258:
+ 2189 0594 0100     		movs	r1, r0
+ 213:mayo_core.c   ****         }
+ 2190              		.loc 1 213 13 discriminator 1 view .LVU608
+ 2191 0596 2800     		movs	r0, r5
+ 2192 0598 FFF7FEFF 		bl	gf16_mul
+ 2193              	.LVL259:
+ 213:mayo_core.c   ****         }
+ 2194              		.loc 1 213 13 discriminator 2 view .LVU609
+ 2195 059c 2100     		movs	r1, r4
+ 213:mayo_core.c   ****         }
+ 2196              		.loc 1 213 13 discriminator 1 view .LVU610
+ 2197 059e 0200     		movs	r2, r0
+ 213:mayo_core.c   ****         }
+ 2198              		.loc 1 213 13 discriminator 2 view .LVU611
+ 2199 05a0 3000     		movs	r0, r6
+ 2200 05a2 FFF7FEFF 		bl	nibble_add
+ 2201              	.LVL260:
+ 2202              	.L75:
+ 213:mayo_core.c   ****         }
+ 2203              		.loc 1 213 13 discriminator 2 view .LVU612
+ 2204              	.LBE91:
+ 205:mayo_core.c   ****             if (i == pr) continue;
+ 2205              		.loc 1 205 34 is_stmt 1 discriminator 2 view .LVU613
+ 2206 05a6 0134     		adds	r4, r4, #1
+ 2207              	.LVL261:
+ 205:mayo_core.c   ****             if (i == pr) continue;
+ 2208              		.loc 1 205 23 discriminator 1 view .LVU614
+ 2209 05a8 102C     		cmp	r4, #16
+ 2210 05aa CDD1     		bne	.L77
+ 216:mayo_core.c   ****     }
+ 2211              		.loc 1 216 9 view .LVU615
+ 2212              	.LVL262:
+ 216:mayo_core.c   ****     }
+ 2213              		.loc 1 216 11 is_stmt 0 view .LVU616
+ 2214 05ac 0137     		adds	r7, r7, #1
+ 2215              	.LVL263:
+ 216:mayo_core.c   ****     }
+ 2216              		.loc 1 216 15 is_stmt 1 view .LVU617
+ 216:mayo_core.c   ****     }
+ 2217              		.loc 1 216 15 is_stmt 0 view .LVU618
+ 2218              	.LBE92:
+ 174:mayo_core.c   ****         /* Find pivot in column pc from row pr downward */
+ 2219              		.loc 1 174 24 is_stmt 1 view .LVU619
+ 2220 05ae 102F     		cmp	r7, #16
+ 2221 05b0 00D0     		beq	.LCB2188
+ 2222 05b2 94E6     		b	.L71	@long jump
+ 2223              	.LCB2188:
+ 2224              	.LBE94:
+ 2225              	.LBE97:
+ 251:mayo_core.c   ****         /* find pivot column of row eq */
+ 2226              		.loc 1 251 13 is_stmt 0 view .LVU620
+ 2227 05b4 0025     		movs	r5, #0
+ 2228 05b6 1427     		movs	r7, #20
+ 2229              	.LVL264:
+ 2230              	.L78:
+ 253:mayo_core.c   ****             if (nibble_get(A, eq * MAYO_KO + col) == 1) {
+ 2231              		.loc 1 253 27 is_stmt 1 discriminator 1 view .LVU621
+ 2232 05b8 3B00     		movs	r3, r7
+ 2233 05ba 6B43     		muls	r3, r5
+ 2234 05bc 0793     		str	r3, [sp, #28]
+ 254:mayo_core.c   ****                 /* check it's really a pivot (all others in col are 0) */
+ 2235              		.loc 1 254 17 is_stmt 0 view .LVU622
+ 2236 05be 044B     		ldr	r3, .L135+8
+ 253:mayo_core.c   ****             if (nibble_get(A, eq * MAYO_KO + col) == 1) {
+ 2237              		.loc 1 253 18 view .LVU623
+ 2238 05c0 0024     		movs	r4, #0
+ 254:mayo_core.c   ****                 /* check it's really a pivot (all others in col are 0) */
+ 2239              		.loc 1 254 17 view .LVU624
+ 2240 05c2 0693     		str	r3, [sp, #24]
+ 2241 05c4 D7E6     		b	.L84
+ 2242              	.L136:
+ 2243 05c6 C046     		.align	2
+ 2244              	.L135:
+ 2245 05c8 00000000 		.word	.LANCHOR1
+ 2246 05cc 20000000 		.word	g_mayo_esk+32
+ 2247 05d0 08000000 		.word	A_copy.1
+ 2248              	.LBE100:
+ 2249              	.LBE111:
+ 2250              	.LBE114:
+ 2251              	.LBE116:
+ 2252              		.cfi_endproc
+ 2253              	.LFE13:
+ 2255              		.global	g_mayo_esk
+ 2256              		.global	GF16_MUL
+ 2257              		.section	.rodata
+ 2258              		.set	.LANCHOR0,. + 0
+ 2261              	zeros.2:
+ 2262 0000 00000000 		.space	16
+ 2262      00000000 
+ 2262      00000000 
+ 2262      00000000 
+ 2265              	GF16_MUL:
+ 2266 0010 00000000 		.ascii	"\000\000\000\000\000\000\000\000\000\000\000\000\000"
+ 2266      00000000 
+ 2266      00000000 
+ 2266      00
+ 2267 001d 00000000 		.ascii	"\000\000\000\000\001\002\003\004\005\006\007\010\011"
+ 2267      01020304 
+ 2267      05060708 
+ 2267      09
+ 2268 002a 0A0B0C0D 		.ascii	"\012\013\014\015\016\017\000\002\004\006\010\012\014"
+ 2268      0E0F0002 
+ 2268      0406080A 
+ 2268      0C
+ 2269 0037 0E030107 		.ascii	"\016\003\001\007\005\013\011\017\015\000\003\006\005"
+ 2269      050B090F 
+ 2269      0D000306 
+ 2269      05
+ 2270 0044 0C0F0A09 		.ascii	"\014\017\012\011\013\010\015\016\007\004\001\002\000"
+ 2270      0B080D0E 
+ 2270      07040102 
+ 2270      00
+ 2271 0051 04080C03 		.ascii	"\004\010\014\003\007\013\017\006\002\016\012\005\001"
+ 2271      070B0F06 
+ 2271      020E0A05 
+ 2271      01
+ 2272 005e 0D090005 		.ascii	"\015\011\000\005\012\017\007\002\015\010\016\013\004"
+ 2272      0A0F0702 
+ 2272      0D080E0B 
+ 2272      04
+ 2273 006b 01090C03 		.ascii	"\001\011\014\003\006\000\006\014\012\013\015\007\001"
+ 2273      0600060C 
+ 2273      0A0B0D07 
+ 2273      01
+ 2274 0078 0503090F 		.ascii	"\005\003\011\017\016\010\002\004\000\007\016\011\017"
+ 2274      0E080204 
+ 2274      00070E09 
+ 2274      0F
+ 2275 0085 0801060D 		.ascii	"\010\001\006\015\012\003\004\002\005\014\013\000\010"
+ 2275      0A030402 
+ 2275      050C0B00 
+ 2275      08
+ 2276 0092 030B060E 		.ascii	"\003\013\006\016\005\015\014\004\017\007\012\002\011"
+ 2276      050D0C04 
+ 2276      0F070A02 
+ 2276      09
+ 2277 009f 01000901 		.ascii	"\001\000\011\001\010\002\013\003\012\004\015\005\014"
+ 2277      08020B03 
+ 2277      0A040D05 
+ 2277      0C
+ 2278 00ac 060F070E 		.ascii	"\006\017\007\016\000\012\007\015\016\004\011\003\017"
+ 2278      000A070D 
+ 2278      0E040903 
+ 2278      0F
+ 2279 00b9 05080201 		.ascii	"\005\010\002\001\013\006\014\000\013\005\016\012\001"
+ 2279      0B060C00 
+ 2279      0B050E0A 
+ 2279      01
+ 2280 00c6 0F04070C 		.ascii	"\017\004\007\014\002\011\015\006\010\003\000\014\013"
+ 2280      02090D06 
+ 2280      0803000C 
+ 2280      0B
+ 2281 00d3 0705090E 		.ascii	"\007\005\011\016\002\012\006\001\015\017\003\004\010"
+ 2281      020A0601 
+ 2281      0D0F0304 
+ 2281      08
+ 2282 00e0 000D0904 		.ascii	"\000\015\011\004\001\014\010\005\002\017\013\006\003"
+ 2282      010C0805 
+ 2282      020F0B06 
+ 2282      03
+ 2283 00ed 0E0A0700 		.ascii	"\016\012\007\000\016\017\001\015\003\002\014\011\007"
+ 2283      0E0F010D 
+ 2283      03020C09 
+ 2283      07
+ 2284 00fa 0608040A 		.ascii	"\006\010\004\012\013\005\000\017\015\002\011\006\004"
+ 2284      0B05000F 
+ 2284      0D020906 
+ 2284      04
+ 2285 0107 0B010E0C 		.ascii	"\013\001\016\014\003\010\007\005\012"
+ 2285      03080705 
+ 2285      0A
+ 2286              		.bss
+ 2287              		.set	.LANCHOR1,. + 0
+ 2290              	y_copy.0:
+ 2291 0000 00000000 		.space	8
+ 2291      00000000 
+ 2294              	A_copy.1:
+ 2295 0008 00000000 		.space	160
+ 2295      00000000 
+ 2295      00000000 
+ 2295      00000000 
+ 2295      00000000 
+ 2298              	g_Mi:
+ 2299 00a8 00000000 		.space	160
+ 2299      00000000 
+ 2299      00000000 
+ 2299      00000000 
+ 2299      00000000 
+ 2302              	g_A:
+ 2303 0148 00000000 		.space	160
+ 2303      00000000 
+ 2303      00000000 
+ 2303      00000000 
+ 2303      00000000 
+ 2306              	g_mayo_esk:
+ 2307 01e8 00000000 		.space	576
+ 2307      00000000 
+ 2307      00000000 
+ 2307      00000000 
+ 2307      00000000 
+ 2308              		.text
+ 2309              	.Letext0:
+ 2310              		.file 3 "/usr/lib/gcc/arm-none-eabi/14.2.1/include/stdint.h"
+ 2311              		.file 4 "/usr/lib/gcc/arm-none-eabi/14.2.1/include/stddef.h"
+ 2312              		.file 5 "mayo_shake.h"
+ 2313              		.file 6 "mayo_core.h"
+ 2314              		.file 7 "/usr/include/newlib/string.h"
+ 2315              		.file 8 "<built-in>"
+DEFINED SYMBOLS
+                            *ABS*:00000000 mayo_core.c
+     /tmp/ccLS8Y8S.s:19     .text.gf16_mul:00000000 $t
+     /tmp/ccLS8Y8S.s:24     .text.gf16_mul:00000000 gf16_mul
+     /tmp/ccLS8Y8S.s:59     .text.gf16_mul:00000014 $d
+     /tmp/ccLS8Y8S.s:2265   .rodata:00000010 GF16_MUL
+     /tmp/ccLS8Y8S.s:64     .text.nibble_get:00000000 $t
+     /tmp/ccLS8Y8S.s:69     .text.nibble_get:00000000 nibble_get
+     /tmp/ccLS8Y8S.s:102    .text.decode_bs8:00000000 $t
+     /tmp/ccLS8Y8S.s:107    .text.decode_bs8:00000000 decode_bs8
+     /tmp/ccLS8Y8S.s:215    .text.nibble_set:00000000 $t
+     /tmp/ccLS8Y8S.s:220    .text.nibble_set:00000000 nibble_set
+     /tmp/ccLS8Y8S.s:284    .text.nibble_add:00000000 $t
+     /tmp/ccLS8Y8S.s:289    .text.nibble_add:00000000 nibble_add
+     /tmp/ccLS8Y8S.s:348    .text.add_El_M_to_A.constprop.0:00000000 $t
+     /tmp/ccLS8Y8S.s:353    .text.add_El_M_to_A.constprop.0:00000000 add_El_M_to_A.constprop.0
+     /tmp/ccLS8Y8S.s:450    .text.add_El_M_to_A.constprop.0:00000058 $d
+     /tmp/ccLS8Y8S.s:2302   .bss:00000148 g_A
+     /tmp/ccLS8Y8S.s:456    .text.mayo_expand_sk:00000000 $t
+     /tmp/ccLS8Y8S.s:462    .text.mayo_expand_sk:00000000 mayo_expand_sk
+     /tmp/ccLS8Y8S.s:741    .text.mayo_expand_sk:00000140 $d
+     /tmp/ccLS8Y8S.s:2306   .bss:000001e8 g_mayo_esk
+     /tmp/ccLS8Y8S.s:750    .text.mayo_sign:00000000 $t
+     /tmp/ccLS8Y8S.s:756    .text.mayo_sign:00000000 mayo_sign
+     /tmp/ccLS8Y8S.s:1646   .text.mayo_sign:00000348 $d
+     /tmp/ccLS8Y8S.s:2298   .bss:000000a8 g_Mi
+     /tmp/ccLS8Y8S.s:2294   .bss:00000008 A_copy.1
+     /tmp/ccLS8Y8S.s:1665   .text.mayo_sign:00000370 $t
+     /tmp/ccLS8Y8S.s:2245   .text.mayo_sign:000005c8 $d
+     /tmp/ccLS8Y8S.s:2261   .rodata:00000000 zeros.2
+     /tmp/ccLS8Y8S.s:2262   .rodata:00000000 $d
+     /tmp/ccLS8Y8S.s:2290   .bss:00000000 y_copy.0
+     /tmp/ccLS8Y8S.s:2291   .bss:00000000 $d
+
+UNDEFINED SYMBOLS
+shake256_multi
+memcpy
+memset
+shake256_init
+shake256_absorb
+shake256_finalize
+shake256_squeeze
+g_shake
